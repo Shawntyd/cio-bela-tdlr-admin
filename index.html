@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cio Bela — TDLR Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8; --bark: #2C2016; --gold: #B8935A; --gold-light: #D4B896; --charcoal: #1A1410;
+    --bg: var(--cream); --surface: #ffffff; --text: var(--bark); --text-soft: #6b5d4c;
+    --border: #E4DBCB; --accent: var(--gold); --accent-strong: #96754a;
+    --ok-bg: #eef1e5; --ok-text: #52642f;
+    --shadow: 0 1px 2px rgba(44,32,22,0.06), 0 4px 16px rgba(44,32,22,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16120c; --surface: #211a12; --text: #EFE6D8; --text-soft: #b8a98f; --border: #3a2e20;
+      --accent: var(--gold-light); --accent-strong: var(--gold-light);
+      --ok-bg: #26301c; --ok-text: #c3d19a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16120c; --surface: #211a12; --text: #EFE6D8; --text-soft: #b8a98f; --border: #3a2e20;
+    --accent: var(--gold-light); --accent-strong: var(--gold-light);
+    --ok-bg: #26301c; --ok-text: #c3d19a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Jost', sans-serif; line-height: 1.5; }
+  h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; margin: 0 0 0.3em; color: var(--text); }
+  h1 { font-size: 2.1rem; font-style: italic; }
+  h2 { font-size: 1.4rem; }
+  h3 { font-size: 1.1rem; font-style: italic; }
+  p { color: var(--text-soft); margin: 0 0 1em; }
+  #topbar {
+    position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px; padding: 14px 20px; overflow-x: auto;
+  }
+  #topbar .brand { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 1.15rem; white-space: nowrap; }
+  main { max-width: 820px; margin: 0 auto; padding: 32px 20px 80px; }
+  .lede { font-size: 1.02rem; max-width: 62ch; }
+  .rule-note {
+    background: var(--ok-bg); border-left: 3px solid var(--accent); border-radius: 4px;
+    padding: 12px 16px; font-size: 0.85rem; margin: 18px 0 26px;
+  }
+  .cat { margin-bottom: 42px; }
+  .cat h2 { border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 4px; }
+  section.group { margin-bottom: 22px; }
+  section.group h3 { margin-bottom: 2px; }
+  .item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--border); }
+  .item:last-child { border-bottom: none; }
+  .item input { width: 19px; height: 19px; margin-top: 2px; accent-color: var(--accent-strong); flex-shrink: 0; }
+  .item label { cursor: pointer; font-size: 0.92rem; }
+  .item.checked label { color: var(--text-soft); text-decoration: line-through; text-decoration-color: var(--border); }
+  .cite { color: var(--text-soft); font-size: 0.76rem; margin-bottom: 6px; }
+  footer.note { margin-top: 50px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--text-soft); }
+</style>
+</head>
+<body>
+<div id="topbar"><span class="brand">Cio Bela · TDLR Admin (owner only)</span></div>
+<main>
+  <h1>Owner Admin — Facility &amp; Postings</h1>
+  <p class="lede">Everything from the TDLR inspection guide that's your responsibility, not something to hand to the artists — facility equipment and required signage/postings, across every service category under one license.</p>
+  <div class="rule-note">Checks are shared and sync live across your own devices. This is a self-audit tool, not one of TDLR's official records.</div>
+  <div id="content">Loading…</div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, doc, setDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDqWez9gCxe3TglTfJTNtXRLhSPgB1kRoc",
+  authDomain: "cio-bela-tdlr-compliance.firebaseapp.com",
+  projectId: "cio-bela-tdlr-compliance",
+  storageBucket: "cio-bela-tdlr-compliance.firebasestorage.app",
+  messagingSenderId: "912638216450",
+  appId: "1:912638216450:web:5d007d6a5fb67cb61a9a1b"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+(function(){
+
+var CATEGORIES = [
+  { key: "shared", label: "Whole Salon (applies to every category)", groups: [
+    { title: "Facility", cite: "16 TAC §§83.71(g), 83.114", items: [
+      "Sink with hot and cold running water in the area where services are performed and supplies are dispensed",
+      "Covered waste receptacles at each station; trash emptied and lined daily",
+      "Client and practitioner seating provided",
+      "Ventilation (exhaust fan / air filtration) clears fumes and odors",
+      "Restroom available on or near the premises; no chemicals stored in restroom",
+      "Floors, walls, shelves and fixtures clean and in good repair",
+      "Suitable plumbing with hot and cold running water at all times"
+    ]},
+    { title: "Required Postings", cite: "Tex. Occ. Code §1603.357, §1603.151, §1603.356; 16 TAC §83.71(l)", items: [
+      "Barbering & Cosmetology Health and Safety Rules posted",
+      "Current establishment license posted",
+      "Notice that a copy of the most recent inspection report is available on request",
+      "Consumer complaint sign posted",
+      "Human Trafficking Awareness sign posted"
+    ]},
+    { title: "Contractor Records", cite: "16 TAC §83.71(c), (e); §83.50(b)", items: [
+      "List of all independent contractors/renters kept current, with license numbers and expiration dates",
+      "List available to hand an inspector on request"
+    ]}
+  ]},
+  { key: "nails", label: "Nails-Specific", groups: [
+    { title: "Equipment", cite: "16 TAC §83.71(g), (h)(2)", items: [
+      "Autoclave, dry heat sterilizer, or UV sanitizer on site",
+      "One manicure station with sufficient lighting, per practitioner",
+      "One manicure chair/stool and one client chair, per station"
+    ]}
+  ]},
+  { key: "hair", label: "Hair-Specific", groups: [
+    { title: "Equipment", cite: "16 TAC §83.71(h)(1)", items: [
+      "One working station and one styling chair, per practitioner",
+      "At least one shampoo bowl (required if offering shampooing or any service that permanently changes hair color or structure)"
+    ]}
+  ]},
+  { key: "lashes", label: "Lashes-Specific", groups: [
+    { title: "Equipment", cite: "16 TAC §83.71(h)(5)", items: [
+      "One facial bed, chair, or massage table per practitioner that allows the client to lie completely flat",
+      "One lamp, one stool or chair, and one mirror, per practitioner"
+    ]}
+  ]},
+  { key: "waxing", label: "Waxing-Specific", groups: [
+    { title: "Equipment", cite: "16 TAC §83.71(g)", items: [
+      "No category-specific equipment beyond the shared facility list \u2014 general sink/ventilation/storage requirements apply"
+    ]}
+  ]}
+];
+
+var body = document.getElementById("content");
+var allItems = [];
+CATEGORIES.forEach(function(cat){
+  cat.groups.forEach(function(g){
+    g.items.forEach(function(txt){
+      allItems.push({ id: (cat.key + "_" + g.title).replace(/\s/g,'') + "_" + allItems.length, cat: cat.key, group: g.title, cite: g.cite, txt: txt });
+    });
+  });
+});
+
+var docRef = doc(db, "admin/checklist");
+onSnapshot(docRef, function(snap){
+  var data = (snap.exists() && snap.data()) || {};
+  var checked = data.items || {};
+  var html = "";
+  CATEGORIES.forEach(function(cat){
+    html += '<div class="cat"><h2>' + cat.label + '</h2>';
+    cat.groups.forEach(function(g){
+      var items = allItems.filter(function(it){ return it.cat === cat.key && it.group === g.title; });
+      html += '<section class="group"><h3>' + g.title + '</h3><div class="cite">' + g.cite + '</div>';
+      items.forEach(function(it){
+        var isChecked = !!(checked[it.id] && checked[it.id].on);
+        html += '<div class="item' + (isChecked ? ' checked' : '') + '">' +
+          '<input type="checkbox" id="cb_' + it.id + '" ' + (isChecked ? 'checked' : '') + ' data-id="' + it.id + '">' +
+          '<label for="cb_' + it.id + '">' + it.txt + '</label></div>';
+      });
+      html += '</section>';
+    });
+    html += '</div>';
+  });
+  body.innerHTML = html;
+  body.querySelectorAll('input[type=checkbox]').forEach(function(cb){
+    cb.addEventListener('change', function(){
+      var id = cb.getAttribute('data-id');
+      var merged = {};
+      merged[id] = { on: cb.checked, updatedAt: new Date().toISOString() };
+      setDoc(docRef, { items: Object.assign({}, checked, merged) });
+    });
+  });
+}, function(err){
+  body.innerHTML = '<p>Could not load checklist right now (' + (err.code || 'error') + '). Try reloading.</p>';
+});
+
+})();
+</script>
+</body>
+</html>

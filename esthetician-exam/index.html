@@ -130,6 +130,13 @@ tr:last-child td{border-bottom:0}
 .opts{display:flex;flex-direction:column;gap:8px}
 .opt{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px 14px;font:500 16px var(--body);cursor:pointer;line-height:1.4}
 .opt .l{flex:0 0 26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--muted)}
+.opt.ok{border-color:var(--good);background:var(--good-soft)}
+.opt.ok .l{background:var(--good);border-color:var(--good);color:var(--bg)}
+.opt.bad{border-color:var(--rose);background:var(--rose-soft)}
+.opt.bad .l{background:var(--rose);border-color:var(--rose);color:var(--bg)}
+.opt:disabled{cursor:default;opacity:1}
+.verdict{font-weight:700;font-size:17px}
+.verdict.ok{color:var(--good)} .verdict.bad{color:var(--rose)}
 .opt[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .opt[aria-checked="true"] .l{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:5px}
@@ -181,34 +188,47 @@ tr:last-child td{border-bottom:0}
   </div>
 
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="t-cards" aria-selected="true" data-tab="cards">Flashcards</button>
-    <button class="tab" role="tab" id="t-test" aria-selected="false" data-tab="test">Practice test</button>
-    <button class="tab" role="tab" id="t-report" aria-selected="false" data-tab="report">Study report</button>
+    <button class="tab" role="tab" id="t-drill" aria-selected="true" data-tab="drill">Flashcards</button>
+    <button class="tab" role="tab" id="t-cards" aria-selected="false" data-tab="cards">Notes</button>
+    <button class="tab" role="tab" id="t-test" aria-selected="false" data-tab="test">Test</button>
+    <button class="tab" role="tab" id="t-report" aria-selected="false" data-tab="report">Report</button>
   </div>
 
   <!-- FLASHCARDS -->
-  <div class="panel" id="p-cards">
+  <!-- GRADED FLASHCARDS -->
+  <div class="panel" id="p-drill">
+    <div class="rail"><div class="chips" id="dchips" role="toolbar" aria-label="Filter by exam section"></div></div>
+    <div class="kpis" id="dstats"></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="meter"><i class="g" id="dmeter"></i></div>
+      <div class="legend" id="dlegend"></div>
+    </div>
+    <div class="box" id="drillCard"></div>
+    <div class="keys">Pick an answer to check it. Cards you miss come back until you get them right twice in a row. Keyboard: A–D to answer, Enter for the next card.</div>
+  </div>
+
+  <!-- NOTES (read-only) -->
+  <div class="panel" id="p-cards" hidden>
     <div class="rail"><div class="chips" id="chips" role="toolbar" aria-label="Filter by exam section"></div></div>
     <div class="tools">
       <div class="toggles">
         <button class="tbtn" id="shuffle" aria-pressed="false">Shuffle</button>
-        <button class="tbtn" id="missedOnly" aria-pressed="false">Missed only</button>
-        <button class="tbtn" id="reset">Reset progress</button>
+        <button class="tbtn" id="missedOnly" aria-pressed="false" hidden>Missed only</button>
+        <button class="tbtn" id="reset" hidden>Reset progress</button>
       </div>
       <div class="count" id="count"></div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:6px">
+    <div style="display:flex;flex-direction:column;gap:6px" hidden>
       <div class="meter" id="meter"><i class="g"></i><i class="r"></i></div>
       <div class="legend" id="legend"></div>
     </div>
     <div id="studyArea"></div>
     <div class="actions" id="actions">
       <button class="btn nav" id="prev" aria-label="Previous card">‹</button>
-      <button class="btn miss" id="missBtn">Study again</button>
-      <button class="btn got" id="gotBtn">Got it</button>
+      <button class="btn got" id="gotBtn" style="grid-column:span 2">Flip card</button>
       <button class="btn nav" id="next" aria-label="Next card">›</button>
     </div>
-    <div class="keys">Tap the card to flip · Keyboard: Space flips, ← → move, 1 = study again, 2 = got it</div>
+    <div class="keys">Study notes for reading. Tap a card to flip it · Keyboard: Space flips, ← → move. The graded cards are on the Flashcards tab.</div>
 
     <section class="ref">
       <h2>What's on the test</h2>
@@ -807,20 +827,29 @@ function showTrackNote(){
 const KEY="tdlr-esth-v1";
 let prog=ls.get(KEY,{})||{};
 let progTimer=null;
-function saveProg(){
-  ls.set(KEY,prog);
+function saveProg(){ls.set(KEY,prog);}
+// graded flashcard history: question id -> {seen, wrong, streak, last (her last wrong pick), lastAt}
+const MKEY="tdlr-esth-mastery";
+let M=ls.get(MKEY,{})||{};
+function saveMastery(now){
+  ls.set(MKEY,M);
   if(isOwner)return;
   clearTimeout(progTimer);
-  progTimer=setTimeout(()=>{const body={key:personKey(),map:prog,updated:new Date().toISOString()};flushChain=flushChain.then(()=>send("progress",personKey(),body));},2500);
+  const go=()=>{const body={key:personKey(),name:studentName||"",mastery:M,updated:new Date().toISOString()};flushChain=flushChain.then(()=>send("progress",personKey(),body));};
+  if(now)go();else progTimer=setTimeout(go,2500);
 }
+function mrec(id){return M[id]||(M[id]={seen:0,wrong:0,streak:0,last:null,lastAt:null});}
+function noteAnswer(q,pickText,correct){const m=mrec(q.id);m.seen++;m.lastAt=new Date().toISOString();if(correct){m.streak++;}else{m.wrong++;m.streak=0;m.last=pickText;}}
+function mstatus(m){if(!m||!m.seen)return "new";if(m.wrong&&m.streak<2)return "fix";if(m.streak>=2)return "mastered";return "learning";}
 
 // ───────── tabs
-let tab="cards";
+let tab="drill";
 function setTab(t){
   if(inTest&&t!=="test"){/* keep test running in background */}
   tab=t;
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
-  $("#p-cards").hidden=t!=="cards";$("#p-test").hidden=t!=="test";$("#p-report").hidden=t!=="report";
+  $("#p-drill").hidden=t!=="drill";$("#p-cards").hidden=t!=="cards";$("#p-test").hidden=t!=="test";$("#p-report").hidden=t!=="report";
+  if(t==="drill")renderDrill();
   if(t==="report")renderReport();
   if(t==="test"&&!inTest)renderHistory();
   activity();
@@ -896,7 +925,7 @@ function mark(v){
   activity();go(1);
 }
 $("#prev").onclick=()=>go(-1);$("#next").onclick=()=>go(1);
-$("#gotBtn").onclick=()=>mark("k");$("#missBtn").onclick=()=>mark("m");
+$("#gotBtn").onclick=()=>flip();
 $("#shuffle").onclick=()=>{shuffle=!shuffle;const id=deck[pos]?deck[pos].id:null;buildDeck(shuffle?null:id);flipped=false;restoreCard();render();};
 $("#missedOnly").onclick=()=>{missedOnly=!missedOnly;buildDeck();flipped=false;restoreCard();render();};
 let resetArmed=false;
@@ -914,12 +943,61 @@ document.addEventListener("keydown",e=>{
     else if(e.key==="ArrowRight")tMove(1);else if(e.key==="ArrowLeft")tMove(-1);
     return;
   }
+  if(tab==="drill"){
+    if(e.target.closest("input"))return;
+    const k=e.key.toLowerCase();
+    if(["a","b","c","d"].includes(k)&&dpick==null)dPick("abcd".indexOf(k));
+    else if((e.key==="Enter"||e.key==="ArrowRight")&&dpick!=null){e.preventDefault();drillNew();}
+    return;
+  }
   if(tab!=="cards"||e.target.closest("input"))return;
   if(e.target.closest("button")&&(e.key===" "||e.key==="Enter"))return;
   if(e.key===" "){e.preventDefault();flip();}
   else if(e.key==="ArrowRight")go(1);else if(e.key==="ArrowLeft")go(-1);
-  else if(e.key==="1")mark("m");else if(e.key==="2")mark("k");
+
 });
+
+// ═════════ GRADED FLASHCARDS
+let dcat="ALL", dq=null, dopts=[], dpick=null, recent=[];
+const todayStr=()=>new Date().toDateString();
+let dToday=ls.get("tdlr-esth-today",null); if(!dToday||dToday.d!==todayStr())dToday={d:todayStr(),n:0,c:0};
+function dPool(){return QB.filter(q=>dcat==="ALL"||q.c===dcat);}
+function nextQ(){
+  const pool=dPool();
+  const w=q=>{const s=mstatus(M[q.id]);return s==="fix"?6:s==="new"?3:s==="learning"?2:0.4;};
+  let cands=pool.filter(q=>!recent.includes(q.id)); if(!cands.length)cands=pool;
+  const tot=cands.reduce((a,q)=>a+w(q),0); let r=Math.random()*tot;
+  for(const q of cands){r-=w(q);if(r<=0)return q;}
+  return cands.at(-1);
+}
+function drillNew(){dq=nextQ();dopts=shuffleArr([dq.ok,...dq.wrong]);dpick=null;recent.push(dq.id);if(recent.length>6)recent.shift();renderDrill();}
+function renderDChips(){
+  const all=[["ALL","All sections",null]];ORDER.forEach(k=>all.push([k,CATS[k].short,CATS[k].w]));
+  $("#dchips").innerHTML=all.map(([k,n,w])=>`<button class="chip" data-k="${k}" aria-pressed="${dcat===k}" style="--c:${k==="ALL"?"var(--ink)":CC[k]}">${k==="ALL"?"":'<span class="dot"></span>'}${n}${w!=null?`<span class="w">${w}%</span>`:""}</button>`).join("");
+}
+$("#dchips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;dcat=b.dataset.k;renderDChips();drillNew();});
+function renderDrill(){
+  if(!dq){drillNew();return;}
+  const pool=dPool(), st={new:0,fix:0,learning:0,mastered:0};pool.forEach(q=>st[mstatus(M[q.id])]++);
+  const acc=dToday.n?Math.round(dToday.c/dToday.n*100)+"%":"—";
+  $("#dstats").innerHTML=`<div class="kpi"><span>Answered today</span><b>${dToday.n}</b></div><div class="kpi"><span>Correct today</span><b>${acc}</b></div><div class="kpi"><span>Still to fix</span><b style="color:${st.fix?"var(--rose)":"inherit"}">${st.fix}</b></div><div class="kpi"><span>Mastered</span><b>${st.mastered} / ${pool.length}</b></div>`;
+  $("#dmeter").style.width=(pool.length?st.mastered/pool.length*100:0)+"%";
+  $("#dlegend").innerHTML=`<span class="lg">${st.mastered} mastered (right twice in a row)</span><span class="ln">${st.new} not seen yet</span>`;
+  const answered=dpick!=null, ok=answered&&dopts[dpick]===dq.ok;
+  $("#drillCard").innerHTML=`<div class="tagrow"><span class="tag" style="--c:${CC[dq.c]}">${CATS[dq.c].name}</span>${mstatus(M[dq.id])==="fix"&&!answered?'<span class="status missed">Missed before</span>':""}</div>
+    <p class="qtext">${esc(dq.q)}</p>
+    <div class="opts" role="radiogroup">${dopts.map((o,i)=>{const cls=answered?(o===dq.ok?" ok":(i===dpick?" bad":"")):"";return `<button class="opt${cls}" data-i="${i}" ${answered?"disabled":""}><span class="l">${"ABCD"[i]}</span><span>${esc(o)}</span></button>`;}).join("")}</div>
+    ${answered?`<div class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite. The answer is: "+esc(dq.ok)}</div><div class="tip"><b>Why</b>${esc(dq.x)}</div><div class="row"><button class="btn got" id="dNext">Next card ›</button></div>`:""}`;
+  if(answered){$("#dNext").onclick=drillNew;$("#dNext").focus({preventScroll:true});}
+}
+$("#drillCard").addEventListener("click",e=>{const b=e.target.closest(".opt");if(b&&dpick==null)dPick(+b.dataset.i);});
+function dPick(i){
+  if(dpick!=null||!dq)return;dpick=i;const ok=dopts[i]===dq.ok;
+  noteAnswer(dq,dopts[i],ok);saveMastery(false);
+  dToday.n++;if(ok)dToday.c++;ls.set("tdlr-esth-today",dToday);
+  sess.cards++;if(ok)sess.got++;else sess.missed++;
+  activity();renderDrill();
+}
 
 // ═════════ PRACTICE TEST
 const MIX={full:{L:15,I:19,K:12,F:21,H:8,min:105,label:"Full practice exam"},quick:{L:4,I:5,K:3,F:6,H:2,min:28,label:"Quick quiz"}};
@@ -972,7 +1050,8 @@ function submitTest(timeUp){
   if(!T)return;clearInterval(tick);inTest=false;
   const by={};ORDER.forEach(c=>by[c]={r:0,t:0});
   const missedQ=[];let right=0;
-  T.items.forEach(x=>{const ok=x.ans!=null&&x.opts[x.ans]===x.q.ok;by[x.q.c].t++;if(ok){by[x.q.c].r++;right++;}else missedQ.push(x);});
+  T.items.forEach(x=>{const ok=x.ans!=null&&x.opts[x.ans]===x.q.ok;by[x.q.c].t++;if(ok){by[x.q.c].r++;right++;}else missedQ.push(x);noteAnswer(x.q,x.ans!=null?x.opts[x.ans]:"(no answer)",ok);});
+  saveMastery(true);
   const total=T.items.length, pct=Math.round(right/total*100), passed=right/total>=0.7;
   const durationSec=Math.round((Math.min(Date.now(),T.ends)-T.start)/1000);
   const rec={id:newId(),key:personKey(),uid:uid||null,device:deviceId,name:studentName||"",kind:T.kind,startedAt:new Date(T.start).toISOString(),finishedAt:new Date().toISOString(),durationSec,timeUp:!!timeUp,score:right,total,pct,passed,bySection:by,missed:missedQ.slice(0,80).map(x=>({c:x.q.c,q:x.q.q,right:x.q.ok,yours:x.ans!=null?x.opts[x.ans]:null}))};
@@ -1008,7 +1087,21 @@ function renderHistory(){
 }
 
 // ═════════ OWNER REPORT
-let SESS=[], TESTS=[], reportReady=false, reportErr="";
+function weakBox(p){
+  const mast=p.mastery||{};
+  const ents=Object.entries(mast).map(([id,m])=>({q:QB.at(+id),m})).filter(r=>r.q&&r.m&&r.m.seen);
+  if(!ents.length)return `<div class="box"><h2>Questions she gets wrong</h2><p>No flashcard or test answers yet.</p></div>`;
+  const seen=ents.reduce((a,r)=>a+r.m.seen,0), wrong=ents.reduce((a,r)=>a+r.m.wrong,0);
+  const missed=ents.filter(r=>r.m.wrong>0).sort((a,b)=>(mstatus(b.m)==="fix")-(mstatus(a.m)==="fix")||b.m.wrong-a.m.wrong);
+  const open=missed.filter(r=>mstatus(r.m)==="fix").length;
+  const by={};ORDER.forEach(c=>by[c]={r:0,t:0});ents.forEach(r=>{by[r.q.c].t+=r.m.seen;by[r.q.c].r+=r.m.seen-r.m.wrong;});
+  return `<div class="box"><h2>Questions she gets wrong</h2>
+    <p>${seen} answers so far across flashcards and practice tests · ${seen?Math.round((seen-wrong)/seen*100):0}% correct · <b style="color:var(--rose)">${open} still being missed</b> · ${missed.length-open} fixed (right twice in a row since)</p>
+    <div style="display:flex;flex-direction:column;gap:10px"><div class="count">Accuracy by section (line = 70% passing)</div>${sectionBars(by)}</div>
+    ${missed.length?`<div class="tablebox"><table><thead><tr><th>Status</th><th>Section</th><th>Question</th><th>Times wrong</th><th>Her last wrong answer</th><th>Correct answer</th></tr></thead><tbody>${missed.slice(0,80).map(r=>`<tr><td><span class="pill ${mstatus(r.m)==="fix"?"fail":"pass"}">${mstatus(r.m)==="fix"?"Still missing":"Fixed"}</span></td><td>${CATS[r.q.c].short}</td><td>${esc(r.q.q)}</td><td>${r.m.wrong} of ${r.m.seen}</td><td>${esc(r.m.last||"—")}</td><td>${esc(r.q.ok)}</td></tr>`).join("")}</tbody></table></div>${missed.length>80?`<p class="foot">Showing the 80 most-missed of ${missed.length}.</p>`:""}`:"<p>She hasn't gotten any wrong yet.</p>"}
+  </div>`;
+}
+let SESS=[], TESTS=[], PROG=[], reportReady=false, reportErr="";
 async function loadReport(){
   reportErr="";
   try{
@@ -1016,7 +1109,7 @@ async function loadReport(){
     const j=await r.json();
     if(r.status===401){reportErr="passcode";}
     else if(!j.ok){reportErr="server";}
-    else{SESS=j.sessions||[];TESTS=j.tests||[];}
+    else{SESS=j.sessions||[];TESTS=j.tests||[];PROG=j.progress||[];}
   }catch(e){reportErr="server";}
   reportReady=true;
 }
@@ -1036,8 +1129,8 @@ async function renderReport(){
   if(reportErr){body.innerHTML=`<div class="box"><h2>Couldn't load the report</h2><p>The study log didn't respond. Check your connection and try again.</p><div class="row"><button class="btn got" id="rRetry">Try again</button></div></div>`;$("#rRetry").onclick=()=>{reportReady=false;renderReport();};return;}
   const people={};
   const add=(r)=>{const k=r.key||r.device;if(!people[k])people[k]={key:k,uid:r.uid||null,names:new Set(),sessions:[],tests:[]};if(r.name)people[k].names.add(r.name);if(r.uid)people[k].uid=r.uid;return people[k];};
-  SESS.forEach(s=>add(s).sessions.push(s));TESTS.forEach(t=>add(t).tests.push(t));
-  const list=Object.values(people).map(p=>{p.sessions.sort((a,b)=>b.start.localeCompare(a.start));p.tests.sort((a,b)=>b.finishedAt.localeCompare(a.finishedAt));p.last=[p.sessions[0]&&p.sessions[0].lastActive,p.tests[0]&&p.tests[0].finishedAt].filter(Boolean).sort().pop()||"";return p;}).sort((a,b)=>b.last.localeCompare(a.last));
+  SESS.forEach(s=>add(s).sessions.push(s));TESTS.forEach(t=>add(t).tests.push(t));PROG.forEach(g=>{if(g&&g.mastery){const p=add(g);p.mastery=g.mastery;p.mUpdated=g.updated;}});
+  const list=Object.values(people).map(p=>{p.sessions.sort((a,b)=>b.start.localeCompare(a.start));p.tests.sort((a,b)=>b.finishedAt.localeCompare(a.finishedAt));p.last=[p.sessions[0]&&p.sessions[0].lastActive,p.tests[0]&&p.tests[0].finishedAt,p.mUpdated].filter(Boolean).sort().pop()||"";return p;}).sort((a,b)=>b.last.localeCompare(a.last));
   const bar=`<div class="row" style="justify-content:space-between"><span class="count">Updated ${new Date().toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span><div class="row"><button class="tbtn" id="rRefresh">Refresh</button><button class="tbtn" id="rLogout">Log out of owner mode</button></div></div>`;
   const wire=()=>{$("#rRefresh").onclick=()=>{reportReady=false;renderReport();};$("#rLogout").onclick=()=>{ownerCode="";isOwner=false;ls.set("tdlr-esth-owner","");maybeAskName();showTrackNote();renderLogin("");};};
   if(!list.length){body.innerHTML=bar+`<div class="box"><h2>No study activity yet</h2><p>Once she opens the link and starts studying, each session and practice test shows up here with the date, start time and how long she studied.</p></div>`;wire();return;}
@@ -1066,7 +1159,7 @@ async function renderReport(){
         <div class="kpi"><span>Study time, last 7 days</span><b>${fmtDur(weekSec)}</b></div>
         <div class="kpi"><span>Study time, all time</span><b>${fmtDur(allSec)}</b></div>
         <div class="kpi"><span>Sessions</span><b>${shown.length}</b></div>
-        <div class="kpi"><span>Cards reviewed</span><b>${cardsAll}</b></div>
+        <div class="kpi"><span>Flashcards answered</span><b>${cardsAll}</b></div>
         <div class="kpi"><span>Latest test</span><b>${lastTest?lastTest.pct+"%":"—"}</b></div>
         <div class="kpi"><span>Best / full exams</span><b>${p.tests.length?best+"%":"—"} · ${fulls.length}</b></div>
       </div>
@@ -1074,7 +1167,8 @@ async function renderReport(){
       <div class="week">${days.map(d=>`<div class="wd"><span>${d.sec?Math.round(d.sec/60)+"m":""}</span><i style="height:${Math.round(d.sec/maxSec*80)}px"></i><span>${d.lbl}</span></div>`).join("")}</div></div>
       ${p.tests.length?`<div style="display:flex;flex-direction:column;gap:10px"><div class="count">Average by section across all practice tests (line = 70%)</div>${sectionBars(agg)}</div>`:""}
     </div>
-    <div class="box"><h2>Study sessions</h2>${shown.length?`<div class="tablebox"><table><thead><tr><th>Started</th><th>Active time</th><th>Cards</th><th>Got / again</th><th>Tests</th></tr></thead><tbody>${shown.slice(0,40).map(s=>`<tr><td>${fmtWhen(s.start)}</td><td>${fmtDur(s.activeSec||0)}</td><td>${s.cards||0}</td><td>${s.got||0} / ${s.missed||0}</td><td>${s.tests||0}</td></tr>`).join("")}</tbody></table></div><p class="foot">Active time counts only while the page is open on screen and she's interacting (idle over 2 minutes isn't counted; 5 minutes during a test).</p>`:"<p>No sessions yet.</p>"}</div>
+    ${weakBox(p)}
+    <div class="box"><h2>Study sessions</h2>${shown.length?`<div class="tablebox"><table><thead><tr><th>Started</th><th>Active time</th><th>Flashcards</th><th>Right / wrong</th><th>Tests</th></tr></thead><tbody>${shown.slice(0,40).map(s=>`<tr><td>${fmtWhen(s.start)}</td><td>${fmtDur(s.activeSec||0)}</td><td>${s.cards||0}</td><td>${s.got||0} / ${s.missed||0}</td><td>${s.tests||0}</td></tr>`).join("")}</tbody></table></div><p class="foot">Active time counts only while the page is open on screen and she's interacting (idle over 2 minutes isn't counted; 5 minutes during a test).</p>`:"<p>No sessions yet.</p>"}</div>
     <div class="box"><h2>Practice test results</h2>${p.tests.length?`<div class="tablebox"><table><thead><tr><th>Finished</th><th>Test</th><th>Score</th><th>Result</th><th>Time taken</th></tr></thead><tbody>${p.tests.slice(0,30).map(t=>`<tr><td>${fmtWhen(t.finishedAt)}</td><td>${MIX[t.kind]?MIX[t.kind].label:esc(t.kind)}</td><td>${t.score}/${t.total} (${t.pct}%)</td><td><span class="pill ${t.passed?"pass":"fail"}">${t.passed?"Pass":"Below 70%"}</span></td><td>${fmtDur(t.durationSec)}${t.timeUp?" (time ran out)":""}</td></tr>`).join("")}</tbody></table></div>
       ${lastTest&&lastTest.missed&&lastTest.missed.length?`<details><summary style="cursor:pointer;font-weight:600">Questions missed on the latest test (${lastTest.missed.length})</summary><div class="review" style="margin-top:10px">${lastTest.missed.map(m=>`<div class="rv" style="--c:${CC[m.c]||"var(--muted)"}"><b>${esc(m.q)}</b><span class="yours">${m.yours?"Answered: "+esc(m.yours):"Not answered"}</span><span class="right">Correct: ${esc(m.right)}</span></div>`).join("")}</div></details>`:""}`:"<p>No practice tests yet.</p>"}</div>`;
     sec.querySelector("h3").textContent=name;
@@ -1083,11 +1177,11 @@ async function renderReport(){
 }
 
 // ═════════ boot
-renderChips();renderOutline();buildDeck();restoreCard();render();renderHistory();
+renderChips();renderOutline();buildDeck();restoreCard();render();renderHistory();renderDChips();drillNew();
 maybeAskName();showTrackNote();
 if(!isOwner){
   fetch(API+"/progress?key="+encodeURIComponent(personKey()),{cache:"no-store"}).then(r=>r.json()).then(j=>{
-    if(j&&j.data&&j.data.map){prog=Object.assign({},j.data.map,prog);ls.set(KEY,prog);render();}
+    if(j&&j.data&&j.data.mastery){for(const [k,v] of Object.entries(j.data.mastery)){if(!M[k]||(v.seen||0)>(M[k].seen||0))M[k]=v;}ls.set(MKEY,M);if(tab==="drill")renderDrill();}
   }).catch(()=>{});
 }
 </script>

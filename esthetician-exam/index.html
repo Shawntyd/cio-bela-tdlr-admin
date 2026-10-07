@@ -791,7 +791,7 @@ let studentName="Mia";
 let uid=null, ownerCode=ls.get("tdlr-esth-owner",""), isOwner=!!ownerCode;
 const personKey=()=>uid||("dev_"+deviceId);
 
-const sess={id:newId(),start:new Date().toISOString(),lastActive:new Date().toISOString(),activeSec:0,cards:0,got:0,missed:0,tests:0,testSec:0};
+const sess={id:newId(),start:new Date().toISOString(),lastActive:new Date().toISOString(),activeSec:0,cards:0,got:0,missed:0,tests:0,testSec:0,awayCount:0,awaySec:0,away:[],flags:[]};
 let lastInteract=Date.now(), inTest=false, dirty=false, lastFlush=0, flushChain=Promise.resolve();
 function touch(){lastInteract=Date.now();}
 ["pointerdown","keydown","scroll","touchstart"].forEach(ev=>addEventListener(ev,touch,{passive:true}));
@@ -801,7 +801,7 @@ setInterval(()=>{
   if(Date.now()-lastInteract<idleLimit){sess.activeSec+=15;if(inTest)sess.testSec+=15;dirty=true;}
 },15000);
 
-function sessionDoc(){return {key:personKey(),uid:uid||null,device:deviceId,name:studentName||"",start:sess.start,lastActive:new Date().toISOString(),activeSec:sess.activeSec,cards:sess.cards,got:sess.got,missed:sess.missed,tests:sess.tests,testSec:sess.testSec};}
+function sessionDoc(){return {key:personKey(),uid:uid||null,device:deviceId,name:studentName||"",start:sess.start,lastActive:new Date().toISOString(),activeSec:sess.activeSec,cards:sess.cards,got:sess.got,missed:sess.missed,tests:sess.tests,testSec:sess.testSec,awayCount:sess.awayCount,awaySec:sess.awaySec,away:sess.away,flags:sess.flags};}
 function flush(force,beacon){
   if(isOwner)return;
   if(!dirty&&!force)return;
@@ -813,13 +813,26 @@ function flush(force,beacon){
   flushChain=flushChain.then(()=>send("session",sess.id,body));
 }
 function activity(){dirty=true;touch();flush(false);}
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush(true,true);});
+let awayAt=null, dqAway=false;
+function goAway(){if(awayAt==null)awayAt=Date.now();}
+function comeBack(){
+  if(awayAt==null)return;
+  const sec=Math.round((Date.now()-awayAt)/1000), at=new Date(awayAt).toISOString(); awayAt=null;
+  if(sec<2)return;
+  const where=inTest?"test":tab;
+  sess.awayCount++;sess.awaySec+=sec;sess.away.push({at,sec,where});if(sess.away.length>60)sess.away.shift();
+  if(inTest&&T){T.away.push({at,sec,q:T.idx+1});T.items[T.idx].left=true;}
+  if(tab==="drill"&&dq&&dpick==null)dqAway=true;
+  dirty=true;flush(true);
+}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){goAway();flush(true,true);}else comeBack();});
+addEventListener("blur",goAway);addEventListener("focus",comeBack);
 addEventListener("pagehide",()=>flush(true,true));
 
 function showTrackNote(){
   const n=$("#trackNote");
   if(isOwner){n.hidden=false;n.textContent="Owner mode is on for this device. The Study report tab shows each student's sessions and test scores. Studying on this device isn't logged.";return;}
-  if(serverOk){n.hidden=false;n.textContent="Your study time and practice test scores are shared with Cio Bela Multi-Service Salon so we can support your exam prep.";}
+  if(serverOk){n.hidden=false;n.textContent="Your study time, answers and practice test scores are shared with Cio Bela Multi-Service Salon so we can support your exam prep. Leaving this page while studying is recorded.";}
   else{n.hidden=false;n.textContent="Can't reach the study log right now. Your progress is still saved on this device and will report again once you're back online.";}
 }
 
@@ -970,7 +983,7 @@ function nextQ(){
   for(const q of cands){r-=w(q);if(r<=0)return q;}
   return cands.at(-1);
 }
-function drillNew(){dq=nextQ();dopts=shuffleArr([dq.ok,...dq.wrong]);dpick=null;recent.push(dq.id);if(recent.length>6)recent.shift();renderDrill();}
+function drillNew(){dqAway=false;dq=nextQ();dopts=shuffleArr([dq.ok,...dq.wrong]);dpick=null;recent.push(dq.id);if(recent.length>6)recent.shift();renderDrill();}
 function renderDChips(){
   const all=[["ALL","All sections",null]];ORDER.forEach(k=>all.push([k,CATS[k].short,CATS[k].w]));
   $("#dchips").innerHTML=all.map(([k,n,w])=>`<button class="chip" data-k="${k}" aria-pressed="${dcat===k}" style="--c:${k==="ALL"?"var(--ink)":CC[k]}">${k==="ALL"?"":'<span class="dot"></span>'}${n}${w!=null?`<span class="w">${w}%</span>`:""}</button>`).join("");
@@ -987,13 +1000,15 @@ function renderDrill(){
   $("#drillCard").innerHTML=`<div class="tagrow"><span class="tag" style="--c:${CC[dq.c]}">${CATS[dq.c].name}</span>${mstatus(M[dq.id])==="fix"&&!answered?'<span class="status missed">Missed before</span>':""}</div>
     <p class="qtext">${esc(dq.q)}</p>
     <div class="opts" role="radiogroup">${dopts.map((o,i)=>{const cls=answered?(o===dq.ok?" ok":(i===dpick?" bad":"")):"";return `<button class="opt${cls}" data-i="${i}" ${answered?"disabled":""}><span class="l">${"ABCD"[i]}</span><span>${esc(o)}</span></button>`;}).join("")}</div>
-    ${answered?`<div class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite. The answer is: "+esc(dq.ok)}</div><div class="tip"><b>Why</b>${esc(dq.x)}</div><div class="row"><button class="btn got" id="dNext">Next card ›</button></div>`:""}`;
+    ${answered&&dqAway?'<p class="foot" style="color:var(--rose)">You left the page before answering this card, so it was noted on your report.</p>':""}${answered?`<div class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite. The answer is: "+esc(dq.ok)}</div><div class="tip"><b>Why</b>${esc(dq.x)}</div><div class="row"><button class="btn got" id="dNext">Next card ›</button></div>`:""}`;
   if(answered){$("#dNext").onclick=drillNew;$("#dNext").focus({preventScroll:true});}
 }
 $("#drillCard").addEventListener("click",e=>{const b=e.target.closest(".opt");if(b&&dpick==null)dPick(+b.dataset.i);});
 function dPick(i){
   if(dpick!=null||!dq)return;dpick=i;const ok=dopts[i]===dq.ok;
-  noteAnswer(dq,dopts[i],ok);saveMastery(false);
+  noteAnswer(dq,dopts[i],ok);
+  if(dqAway){const m=mrec(dq.id);m.af=(m.af||0)+1;sess.flags.push({at:new Date().toISOString(),q:dq.id,ok,pick:dopts[i]});if(sess.flags.length>100)sess.flags.shift();}
+  saveMastery(false);
   dToday.n++;if(ok)dToday.c++;ls.set("tdlr-esth-today",dToday);
   sess.cards++;if(ok)sess.got++;else sess.missed++;
   activity();renderDrill();
@@ -1006,7 +1021,7 @@ function startTest(kind){
   const m=MIX[kind];let items=[];
   ORDER.forEach(c=>{shuffleArr(QB.filter(q=>q.c===c)).slice(0,m[c]).forEach(q=>items.push({q,opts:shuffleArr([q.ok,...q.wrong]),ans:null,flag:false}));});
   items=shuffleArr(items);
-  T={kind,items,idx:0,start:Date.now(),ends:Date.now()+m.min*60000};
+  T={kind,items,idx:0,start:Date.now(),ends:Date.now()+m.min*60000,away:[]};
   inTest=true;
   $("#testStart").hidden=true;$("#testResult").hidden=true;$("#testRun").hidden=false;
   clearInterval(tick);tick=setInterval(updTimer,1000);updTimer();renderQ();activity();
@@ -1054,7 +1069,7 @@ function submitTest(timeUp){
   saveMastery(true);
   const total=T.items.length, pct=Math.round(right/total*100), passed=right/total>=0.7;
   const durationSec=Math.round((Math.min(Date.now(),T.ends)-T.start)/1000);
-  const rec={id:newId(),key:personKey(),uid:uid||null,device:deviceId,name:studentName||"",kind:T.kind,startedAt:new Date(T.start).toISOString(),finishedAt:new Date().toISOString(),durationSec,timeUp:!!timeUp,score:right,total,pct,passed,bySection:by,missed:missedQ.slice(0,80).map(x=>({c:x.q.c,q:x.q.q,right:x.q.ok,yours:x.ans!=null?x.opts[x.ans]:null}))};
+  const rec={id:newId(),key:personKey(),uid:uid||null,device:deviceId,name:studentName||"",kind:T.kind,startedAt:new Date(T.start).toISOString(),finishedAt:new Date().toISOString(),durationSec,timeUp:!!timeUp,away:{count:T.away.length,sec:T.away.reduce((a,e)=>a+e.sec,0),events:T.away.slice(0,40)},score:right,total,pct,passed,bySection:by,missed:missedQ.slice(0,80).map(x=>({c:x.q.c,q:x.q.q,right:x.q.ok,yours:x.ans!=null?x.opts[x.ans]:null}))};
   const hist=ls.get("tdlr-esth-tests",[]);hist.unshift(rec);ls.set("tdlr-esth-tests",hist.slice(0,50));
   sess.tests++;dirty=true;
   if(!isOwner){flushChain=flushChain.then(()=>send("test",rec.id,rec));}
@@ -1069,6 +1084,7 @@ function renderResult(rec,missedQ,timeUp){
   const weakest=ORDER.filter(c=>rec.bySection[c].t).sort((a,b)=>rec.bySection[a].r/rec.bySection[a].t-rec.bySection[b].r/rec.bySection[b].t)[0];
   el.innerHTML=`<div class="box">
     ${timeUp?'<p style="color:var(--rose)">Time ran out, so the test was submitted automatically.</p>':""}
+    ${rec.away&&rec.away.count?`<p style="color:var(--rose)">You left the test page ${rec.away.count} time${rec.away.count>1?"s":""} (${fmtDur(rec.away.sec)} total). This is on your report. On the real exam, leaving the screen ends your test.</p>`:""}
     <div class="score"><span class="big">${rec.pct}%</span><span class="pill ${rec.passed?"pass":"fail"}">${rec.passed?"Passing":"Not passing yet"}</span></div>
     <p>${rec.score} of ${rec.total} correct · needs ${Math.ceil(rec.total*0.7)} to pass · finished in ${fmtDur(rec.durationSec)}</p>
     <div style="display:flex;flex-direction:column;gap:10px">${sectionBars(rec.bySection)}</div>
@@ -1087,6 +1103,19 @@ function renderHistory(){
 }
 
 // ═════════ OWNER REPORT
+function awayBox(p){
+  const WHERE={drill:"Flashcards",cards:"Notes",test:"Practice test",report:"Report"};
+  const ev=[];p.sessions.forEach(s=>(s.away||[]).forEach(e=>ev.push(e)));ev.sort((a,b)=>b.at.localeCompare(a.at));
+  const fl=[];p.sessions.forEach(s=>(s.flags||[]).forEach(f=>fl.push(f)));fl.sort((a,b)=>b.at.localeCompare(a.at));
+  if(!ev.length)return `<div class="box"><h2>Leaving the page</h2><p>She hasn't left the page while studying.</p></div>`;
+  const okAfter=fl.filter(f=>f.ok).length;
+  return `<div class="box"><h2>Leaving the page</h2>
+    <p>${ev.length} time${ev.length>1?"s":""} logged, ${fmtDur(ev.reduce((a,e)=>a+e.sec,0))} away in total.${fl.length?` She answered ${fl.length} flashcard${fl.length>1?"s":""} right after coming back, and got ${okAfter} of them right. A correct answer right after leaving may have been looked up.`:""}</p>
+    <div class="tablebox"><table><thead><tr><th>Left at</th><th>Away for</th><th>During</th></tr></thead><tbody>${ev.slice(0,40).map(e=>`<tr><td>${fmtWhen(e.at)}</td><td>${fmtDur(e.sec)}</td><td>${WHERE[e.where]||esc(e.where)}</td></tr>`).join("")}</tbody></table></div>
+    ${fl.length?`<div class="tablebox"><table><thead><tr><th>Answered at</th><th>Question</th><th>Her answer</th><th>Result</th></tr></thead><tbody>${fl.slice(0,40).map(f=>{const q=QB.at(f.q);return `<tr><td>${fmtWhen(f.at)}</td><td>${q?esc(q.q):"—"}</td><td>${esc(f.pick||"")}</td><td><span class="pill ${f.ok?"pass":"fail"}">${f.ok?"Right":"Wrong"}</span></td></tr>`;}).join("")}</tbody></table></div>`:""}
+    <p class="foot">Counted when she switches to another app or tab, or the page loses focus for 2 seconds or more. It can't detect a second device, a book, or someone helping in person.</p>
+  </div>`;
+}
 function weakBox(p){
   const mast=p.mastery||{};
   const ents=Object.entries(mast).map(([id,m])=>({q:QB.at(+id),m})).filter(r=>r.q&&r.m&&r.m.seen);
@@ -1113,6 +1142,23 @@ async function loadReport(){
   }catch(e){reportErr="server";}
   reportReady=true;
 }
+function showErase(){
+  $("#eraseBox").innerHTML=`<div class="box" style="border-color:var(--rose)"><h2>Erase all data?</h2><p>This permanently deletes every study session, flashcard answer, practice test and page-leaving record, for everyone. It can't be undone. Type <b style="color:var(--ink)">ERASE</b> to confirm.</p><div class="row"><input id="eraseInput" type="text" autocomplete="off" placeholder="ERASE" style="flex:1 1 160px;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:10px;font:500 15px var(--body)"><button class="btn miss" id="eraseGo">Erase everything</button><button class="btn plain" id="eraseCancel">Cancel</button></div><p id="eraseMsg" class="foot"></p></div>`;
+  $("#eraseCancel").onclick=()=>{$("#eraseBox").innerHTML="";};
+  $("#eraseGo").onclick=async()=>{
+    if($("#eraseInput").value.trim()!=="ERASE"){$("#eraseMsg").textContent="Type ERASE in capital letters to confirm.";return;}
+    $("#eraseGo").textContent="Erasing…";
+    try{
+      const r=await fetch(API+"/wipe",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({code:ownerCode})});
+      const j=await r.json();
+      if(!j.ok){$("#eraseMsg").textContent=r.status===401?"Your passcode was rejected, so nothing was erased.":"The study log didn't erase. Nothing was changed; try again.";$("#eraseGo").textContent="Erase everything";return;}
+      ["tdlr-esth-mastery","tdlr-esth-tests","tdlr-esth-today",KEY].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+      M={};prog={};dToday={d:todayStr(),n:0,c:0};
+      reportReady=false;await renderReport();
+      const eb=$("#eraseBox");if(eb)eb.innerHTML=`<div class="notice">Erased ${j.deleted} records. Everything starts fresh.</div>`;
+    }catch(e){$("#eraseMsg").textContent="Couldn't reach the study log. Nothing was erased.";$("#eraseGo").textContent="Erase everything";}
+  };
+}
 function renderLogin(msg){
   $("#reportBody").innerHTML=`<div class="box"><h2>Owner login</h2><p>Enter the passcode you set in Cloudflare to see the study report on this device.</p>${msg?`<p style="color:var(--rose)">${msg}</p>`:""}<div class="row"><input id="codeInput" type="password" autocomplete="current-password" placeholder="Passcode" style="flex:1 1 180px;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:10px;font:500 15px var(--body)"><button class="btn got" id="codeGo">Open report</button></div></div>`;
   const go=async()=>{const v=$("#codeInput").value.trim();if(!v)return;ownerCode=v;$("#codeGo").textContent="Checking…";await loadReport();
@@ -1131,8 +1177,8 @@ async function renderReport(){
   const add=(r)=>{const k=r.key||r.device;if(!people[k])people[k]={key:k,uid:r.uid||null,names:new Set(),sessions:[],tests:[]};if(r.name)people[k].names.add(r.name);if(r.uid)people[k].uid=r.uid;return people[k];};
   SESS.forEach(s=>add(s).sessions.push(s));TESTS.forEach(t=>add(t).tests.push(t));PROG.forEach(g=>{if(g&&g.mastery){const p=add(g);p.mastery=g.mastery;p.mUpdated=g.updated;}});
   const list=Object.values(people).map(p=>{p.sessions.sort((a,b)=>b.start.localeCompare(a.start));p.tests.sort((a,b)=>b.finishedAt.localeCompare(a.finishedAt));p.last=[p.sessions[0]&&p.sessions[0].lastActive,p.tests[0]&&p.tests[0].finishedAt,p.mUpdated].filter(Boolean).sort().pop()||"";return p;}).sort((a,b)=>b.last.localeCompare(a.last));
-  const bar=`<div class="row" style="justify-content:space-between"><span class="count">Updated ${new Date().toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span><div class="row"><button class="tbtn" id="rRefresh">Refresh</button><button class="tbtn" id="rLogout">Log out of owner mode</button></div></div>`;
-  const wire=()=>{$("#rRefresh").onclick=()=>{reportReady=false;renderReport();};$("#rLogout").onclick=()=>{ownerCode="";isOwner=false;ls.set("tdlr-esth-owner","");maybeAskName();showTrackNote();renderLogin("");};};
+  const bar=`<div class="row" style="justify-content:space-between"><span class="count">Updated ${new Date().toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span><div class="row"><button class="tbtn" id="rRefresh">Refresh</button><button class="tbtn" id="rLogout">Log out of owner mode</button><button class="tbtn" id="rErase" style="color:var(--rose);border-color:var(--rose)">Erase all data</button></div></div><div id="eraseBox"></div>`;
+  const wire=()=>{$("#rErase").onclick=showErase;$("#rRefresh").onclick=()=>{reportReady=false;renderReport();};$("#rLogout").onclick=()=>{ownerCode="";isOwner=false;ls.set("tdlr-esth-owner","");maybeAskName();showTrackNote();renderLogin("");};};
   if(!list.length){body.innerHTML=bar+`<div class="box"><h2>No study activity yet</h2><p>Once she opens the link and starts studying, each session and practice test shows up here with the date, start time and how long she studied.</p></div>`;wire();return;}
   const profs={};
   const now=Date.now(), dayMs=86400000;
@@ -1150,7 +1196,8 @@ async function renderReport(){
     const maxSec=Math.max(600,...days.map(d=>d.sec));
     // section averages over all tests
     const agg={};ORDER.forEach(c=>agg[c]={r:0,t:0});p.tests.forEach(t=>ORDER.forEach(c=>{if(t.bySection&&t.bySection[c]){agg[c].r+=t.bySection[c].r;agg[c].t+=t.bySection[c].t;}}));
-    const shown=p.sessions.filter(s=>(s.activeSec||0)>=30||s.cards||s.tests);
+    const shown=p.sessions.filter(s=>(s.activeSec||0)>=30||s.cards||s.tests||s.awayCount);
+    const weekAway=week.reduce((a,s)=>a+(s.awayCount||0),0);
     const sec=document.createElement("div");sec.className="panel";
     sec.innerHTML=`<div class="box">
       <div class="person"><h3></h3></div>
@@ -1159,6 +1206,7 @@ async function renderReport(){
         <div class="kpi"><span>Study time, last 7 days</span><b>${fmtDur(weekSec)}</b></div>
         <div class="kpi"><span>Study time, all time</span><b>${fmtDur(allSec)}</b></div>
         <div class="kpi"><span>Sessions</span><b>${shown.length}</b></div>
+        <div class="kpi"><span>Left the page, 7 days</span><b style="color:${weekAway?"var(--rose)":"inherit"}">${weekAway}×</b></div>
         <div class="kpi"><span>Flashcards answered</span><b>${cardsAll}</b></div>
         <div class="kpi"><span>Latest test</span><b>${lastTest?lastTest.pct+"%":"—"}</b></div>
         <div class="kpi"><span>Best / full exams</span><b>${p.tests.length?best+"%":"—"} · ${fulls.length}</b></div>
@@ -1168,8 +1216,9 @@ async function renderReport(){
       ${p.tests.length?`<div style="display:flex;flex-direction:column;gap:10px"><div class="count">Average by section across all practice tests (line = 70%)</div>${sectionBars(agg)}</div>`:""}
     </div>
     ${weakBox(p)}
-    <div class="box"><h2>Study sessions</h2>${shown.length?`<div class="tablebox"><table><thead><tr><th>Started</th><th>Active time</th><th>Flashcards</th><th>Right / wrong</th><th>Tests</th></tr></thead><tbody>${shown.slice(0,40).map(s=>`<tr><td>${fmtWhen(s.start)}</td><td>${fmtDur(s.activeSec||0)}</td><td>${s.cards||0}</td><td>${s.got||0} / ${s.missed||0}</td><td>${s.tests||0}</td></tr>`).join("")}</tbody></table></div><p class="foot">Active time counts only while the page is open on screen and she's interacting (idle over 2 minutes isn't counted; 5 minutes during a test).</p>`:"<p>No sessions yet.</p>"}</div>
-    <div class="box"><h2>Practice test results</h2>${p.tests.length?`<div class="tablebox"><table><thead><tr><th>Finished</th><th>Test</th><th>Score</th><th>Result</th><th>Time taken</th></tr></thead><tbody>${p.tests.slice(0,30).map(t=>`<tr><td>${fmtWhen(t.finishedAt)}</td><td>${MIX[t.kind]?MIX[t.kind].label:esc(t.kind)}</td><td>${t.score}/${t.total} (${t.pct}%)</td><td><span class="pill ${t.passed?"pass":"fail"}">${t.passed?"Pass":"Below 70%"}</span></td><td>${fmtDur(t.durationSec)}${t.timeUp?" (time ran out)":""}</td></tr>`).join("")}</tbody></table></div>
+    ${awayBox(p)}
+    <div class="box"><h2>Study sessions</h2>${shown.length?`<div class="tablebox"><table><thead><tr><th>Started</th><th>Active time</th><th>Flashcards</th><th>Right / wrong</th><th>Tests</th><th>Left page</th></tr></thead><tbody>${shown.slice(0,40).map(s=>`<tr><td>${fmtWhen(s.start)}</td><td>${fmtDur(s.activeSec||0)}</td><td>${s.cards||0}</td><td>${s.got||0} / ${s.missed||0}</td><td>${s.tests||0}</td><td>${s.awayCount?`<span style="color:var(--rose)">${s.awayCount}× · ${fmtDur(s.awaySec||0)}</span>`:"—"}</td></tr>`).join("")}</tbody></table></div><p class="foot">Active time counts only while the page is open on screen and she's interacting (idle over 2 minutes isn't counted; 5 minutes during a test).</p>`:"<p>No sessions yet.</p>"}</div>
+    <div class="box"><h2>Practice test results</h2>${p.tests.length?`<div class="tablebox"><table><thead><tr><th>Finished</th><th>Test</th><th>Score</th><th>Result</th><th>Time taken</th><th>Left page</th></tr></thead><tbody>${p.tests.slice(0,30).map(t=>`<tr><td>${fmtWhen(t.finishedAt)}</td><td>${MIX[t.kind]?MIX[t.kind].label:esc(t.kind)}</td><td>${t.score}/${t.total} (${t.pct}%)</td><td><span class="pill ${t.passed?"pass":"fail"}">${t.passed?"Pass":"Below 70%"}</span></td><td>${fmtDur(t.durationSec)}${t.timeUp?" (time ran out)":""}</td><td>${t.away&&t.away.count?`<span style="color:var(--rose)">${t.away.count}× · ${fmtDur(t.away.sec)}</span>`:"—"}</td></tr>`).join("")}</tbody></table></div>
       ${lastTest&&lastTest.missed&&lastTest.missed.length?`<details><summary style="cursor:pointer;font-weight:600">Questions missed on the latest test (${lastTest.missed.length})</summary><div class="review" style="margin-top:10px">${lastTest.missed.map(m=>`<div class="rv" style="--c:${CC[m.c]||"var(--muted)"}"><b>${esc(m.q)}</b><span class="yours">${m.yours?"Answered: "+esc(m.yours):"Not answered"}</span><span class="right">Correct: ${esc(m.right)}</span></div>`).join("")}</div></details>`:""}`:"<p>No practice tests yet.</p>"}</div>`;
     sec.querySelector("h3").textContent=name;
     body.appendChild(sec);

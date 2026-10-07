@@ -1,0 +1,1096 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Esthetician Exam Flashcards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: tabbed study app (cards / practice test / owner report) in one centered column. Treatment-room palette: porcelain, eucalyptus, rose. */
+:root{
+  --bg:#EDF1F1; --surface:#FFFFFF; --sunk:#E2E8E8; --ink:#1B2A2E; --muted:#5A6B6F; --line:#CBD5D6;
+  --accent:#2C6B66; --accent-ink:#FFFFFF; --accent-soft:#D7E8E5;
+  --rose:#A9445E; --rose-soft:#F3DDE3; --good:#2F7448; --good-soft:#DCEDE1; --warn:#9A6A12; --warn-soft:#F5E9CF;
+  --cL:#5B5FA8; --cI:#A9445E; --cK:#B0742A; --cF:#2C6B66; --cH:#7A4E8F;
+  --display:"Young Serif", Georgia, "Times New Roman", serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow:0 1px 2px rgba(20,40,44,.06), 0 8px 24px rgba(20,40,44,.08);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#111819; --surface:#1A2426; --sunk:#141D1F; --ink:#E4ECEC; --muted:#93A4A7; --line:#2C3A3D;
+  --accent:#72B8AE; --accent-ink:#0E1E1C; --accent-soft:#1F3A37;
+  --rose:#E28AA1; --rose-soft:#3B2229; --good:#7CC796; --good-soft:#1C3325; --warn:#E3B860; --warn-soft:#3A2F17;
+  --cL:#9EA2EA; --cI:#E28AA1; --cK:#E0AC63; --cF:#72B8AE; --cH:#C39AD8;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#111819; --surface:#1A2426; --sunk:#141D1F; --ink:#E4ECEC; --muted:#93A4A7; --line:#2C3A3D;
+  --accent:#72B8AE; --accent-ink:#0E1E1C; --accent-soft:#1F3A37;
+  --rose:#E28AA1; --rose-soft:#3B2229; --good:#7CC796; --good-soft:#1C3325; --warn:#E3B860; --warn-soft:#3A2F17;
+  --cL:#9EA2EA; --cI:#E28AA1; --cK:#E0AC63; --cF:#72B8AE; --cH:#C39AD8;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35); color-scheme:dark;
+}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:8px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,6vw,40px);line-height:1.1;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;text-wrap:balance}
+.facts{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.facts b{color:var(--ink);font-weight:600}
+.tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);font:600 14px var(--body);padding:10px 8px;border-radius:9px;cursor:pointer;min-width:0}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.panel{display:flex;flex-direction:column;gap:18px}
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;margin-inline:-16px;padding-inline:16px;border-bottom:1px solid var(--line)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 12px;font:600 13px var(--body);cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--c,var(--muted))}
+.chip .w{color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed="true"] .w{color:var(--bg);opacity:.75}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.toggles{display:flex;gap:8px;flex-wrap:wrap}
+.tbtn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:6px 10px;font:500 13px var(--body);cursor:pointer}
+.tbtn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meter{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden;display:flex}
+.meter i{display:block;height:100%}
+.meter .g{background:var(--good)} .meter .r{background:var(--rose)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+.legend .lg::before{background:var(--good)} .legend .lr::before{background:var(--rose)} .legend .ln::before{background:var(--sunk);border:1px solid var(--line)}
+.stage{perspective:1400px}
+.card{display:grid;transition:transform .45s cubic-bezier(.2,.7,.2,1);transform-style:preserve-3d;cursor:pointer;min-height:340px;outline:none}
+.card.flipped{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--line);padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.back{transform:rotateY(180deg)}
+.card:focus-visible .face{outline:3px solid var(--accent);outline-offset:3px}
+.tagrow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px}
+.tag{font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
+.src{color:var(--muted)}
+.status{font-weight:600;border-radius:99px;padding:2px 8px}
+.status.known{background:var(--good-soft);color:var(--good)}
+.status.missed{background:var(--rose-soft);color:var(--rose)}
+.q{font-family:var(--display);font-size:clamp(21px,4.6vw,27px);line-height:1.3;margin:auto 0;text-wrap:balance}
+.hint{font-size:13px;color:var(--muted);text-align:center}
+.a{font-size:16px;line-height:1.55;overflow-wrap:anywhere}
+.a ul,.a ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:3px}
+.qsmall{font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:10px}
+.tip{margin-top:auto;background:var(--accent-soft);border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.45}
+.tip b{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.actions{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px}
+.btn{border:0;border-radius:12px;padding:14px 16px;font:600 15px var(--body);cursor:pointer}
+.btn:focus-visible,.chip:focus-visible,.tbtn:focus-visible,.tab:focus-visible,.opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.nav{background:var(--surface);color:var(--ink);border:1px solid var(--line);width:48px;padding-inline:0;font-size:18px}
+.plain{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.miss{background:var(--rose-soft);color:var(--rose)}
+.got{background:var(--accent);color:var(--accent-ink)}
+.keys{font-size:12px;color:var(--muted);text-align:center}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);min-width:0}
+.box p{margin:0;color:var(--muted)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+section.ref{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+section.ref > p{margin:0;color:var(--muted);font-size:14px}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.nums td:first-child{font-weight:700;white-space:nowrap;color:var(--accent)}
+.outline{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.ol{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ol .t{font-weight:700;display:flex;justify-content:space-between;gap:8px}
+.ol .t span{color:var(--c);font-variant-numeric:tabular-nums}
+.ol .d{font-size:13px;color:var(--muted)}
+.bar{height:4px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c)}
+.foot{font-size:12px;color:var(--muted)}
+.notice{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:10px;padding:10px 12px}
+.namebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--warn-soft);border-radius:12px;padding:12px}
+.namebar label{font-weight:600;font-size:14px;flex:1 1 220px}
+.namebar input{flex:1 1 180px;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:9px 10px;font:500 15px var(--body)}
+/* practice test */
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.mode{text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:4px;font:inherit}
+.mode b{font-family:var(--display);font-weight:400;font-size:20px}
+.mode span{color:var(--muted);font-size:14px}
+.mode:hover{border-color:var(--accent)}
+.thead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:8px;z-index:4}
+.timer{font:700 18px var(--body);font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.timer.low{background:var(--rose-soft);color:var(--rose);border-color:var(--rose)}
+.qtext{font-family:var(--display);font-size:clamp(20px,4.4vw,25px);line-height:1.35;margin:0;text-wrap:pretty}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px 14px;font:500 16px var(--body);cursor:pointer;line-height:1.4}
+.opt .l{flex:0 0 26px;height:26px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--muted)}
+.opt[aria-checked="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.opt[aria-checked="true"] .l{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:5px}
+.gq{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:6px;padding:6px 0;font:600 12px var(--body);cursor:pointer;font-variant-numeric:tabular-nums;position:relative}
+.gq.ans{background:var(--accent-soft);color:var(--ink);border-color:var(--accent)}
+.gq.cur{outline:2px solid var(--ink);outline-offset:1px}
+.gq.flag::after{content:"";position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
+.score{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.score .big{font-family:var(--display);font-size:56px;line-height:1}
+.pill{display:inline-block;font-weight:700;font-size:13px;border-radius:99px;padding:3px 10px}
+.pill.pass{background:var(--good-soft);color:var(--good)}
+.pill.fail{background:var(--rose-soft);color:var(--rose)}
+.secrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;font-size:14px}
+.secbar{grid-column:1/-1;height:8px;background:var(--sunk);border-radius:99px;position:relative;overflow:hidden}
+.secbar i{position:absolute;inset:0 auto 0 0;background:var(--c)}
+.secbar s{position:absolute;top:0;bottom:0;left:70%;width:2px;background:var(--ink);opacity:.5}
+.review{display:flex;flex-direction:column;gap:10px}
+.rv{border-left:3px solid var(--c);background:var(--surface);border-radius:0 10px 10px 0;padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.rv .yours{color:var(--rose)} .rv .right{color:var(--good);font-weight:600}
+.rv .why{color:var(--muted)}
+/* report */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi span{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.kpi b{font-size:20px;font-variant-numeric:tabular-nums}
+.person{display:flex;align-items:center;gap:10px}
+.person img{width:36px;height:36px;border-radius:50%}
+.person h3{margin:0;font-family:var(--display);font-weight:400;font-size:22px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:110px}
+.wd{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.wd i{display:block;width:100%;max-width:34px;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px}
+@media (max-width:420px){.actions{grid-template-columns:44px 1fr 1fr 44px}.nav{width:44px}.face{padding:18px 16px 16px}.box{padding:16px}}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Texas · TDLR / PSI Written Exam · Esthetician</div>
+    <h1>Esthetician Exam Flashcards</h1>
+    <div class="facts"><span><b>75</b> scored questions</span><span><b>105</b> minutes</span><span><b>70%</b> to pass (53 right)</span><span>+7 unscored · +10 min</span></div>
+  </header>
+
+  <div class="namebar" id="namebar" hidden>
+    <label for="nameInput">What's your first and last name? It goes on your study report.</label>
+    <input id="nameInput" type="text" autocomplete="name" placeholder="Your name">
+    <button class="btn got" id="nameSave" style="padding:10px 16px">Save</button>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-cards" aria-selected="true" data-tab="cards">Flashcards</button>
+    <button class="tab" role="tab" id="t-test" aria-selected="false" data-tab="test">Practice test</button>
+    <button class="tab" role="tab" id="t-report" aria-selected="false" data-tab="report">Study report</button>
+  </div>
+
+  <!-- FLASHCARDS -->
+  <div class="panel" id="p-cards">
+    <div class="rail"><div class="chips" id="chips" role="toolbar" aria-label="Filter by exam section"></div></div>
+    <div class="tools">
+      <div class="toggles">
+        <button class="tbtn" id="shuffle" aria-pressed="false">Shuffle</button>
+        <button class="tbtn" id="missedOnly" aria-pressed="false">Missed only</button>
+        <button class="tbtn" id="reset">Reset progress</button>
+      </div>
+      <div class="count" id="count"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="meter" id="meter"><i class="g"></i><i class="r"></i></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div id="studyArea"></div>
+    <div class="actions" id="actions">
+      <button class="btn nav" id="prev" aria-label="Previous card">‹</button>
+      <button class="btn miss" id="missBtn">Study again</button>
+      <button class="btn got" id="gotBtn">Got it</button>
+      <button class="btn nav" id="next" aria-label="Next card">›</button>
+    </div>
+    <div class="keys">Tap the card to flip · Keyboard: Space flips, ← → move, 1 = study again, 2 = got it</div>
+
+    <section class="ref">
+      <h2>What's on the test</h2>
+      <p>From the PSI Texas Esthetician Candidate Information Bulletin (January 1, 2026). Spend study time in proportion to these weights.</p>
+      <div class="outline" id="outline"></div>
+    </section>
+
+    <section class="ref">
+      <h2>Numbers to memorize</h2>
+      <p>Exam writers love numbers. Knowing this table cold is several easy points.</p>
+      <div class="tablebox"><table class="nums"><tbody>
+        <tr><td>17</td><td>Minimum age for a Texas esthetician license</td></tr>
+        <tr><td>750</td><td>Training hours for esthetician (450 theory + 300 specialty practice)</td></tr>
+        <tr><td>375</td><td>Max distance-education hours in the 750-hour course (theory only)</td></tr>
+        <tr><td>75</td><td>Max field-trip hours in the esthetician course (no credit for travel)</td></tr>
+        <tr><td>320</td><td>Hours for the eyelash extension specialty license</td></tr>
+        <tr><td>800</td><td>Hours for the esthetician/manicurist combined license</td></tr>
+        <tr><td>2 years</td><td>License renewal cycle; CE must be done within the 2 years before renewal; keep CE certificates 2 years</td></tr>
+        <tr><td>4 hours</td><td>Continuing education per renewal: 1 sanitation + 1 human trafficking + 2 other approved hours</td></tr>
+        <tr><td>15 years</td><td>Licensed this long? CE drops to 1 hr sanitation + 1 hr human trafficking</td></tr>
+        <tr><td>30 days</td><td>Notify TDLR of a name change or address change</td></tr>
+        <tr><td>1½ × 1½ in</td><td>Minimum size of the current photo attached to the license</td></tr>
+        <tr><td>2 min</td><td>Bleach solution disinfection time (TDLR guidance)</td></tr>
+        <tr><td>5 min</td><td>Full immersion in bleach solution for a tool contaminated with blood</td></tr>
+        <tr><td>Daily</td><td>Mix fresh immersion disinfectant and bleach; empty trash; clean floors</td></tr>
+        <tr><td>24–48 hrs</td><td>Patch (predisposition) test before tinting or a new product</td></tr>
+        <tr><td>¼–½ in</td><td>Hair length for waxing</td></tr>
+        <tr><td>6–12 mo</td><td>Wait after stopping isotretinoin (Accutane) before waxing or exfoliating</td></tr>
+        <tr><td>4.5–5.5</td><td>Normal skin pH (the acid mantle)</td></tr>
+        <tr><td>~28 days</td><td>Adult skin cell turnover (slows with age)</td></tr>
+        <tr><td>16</td><td>Sections in a Safety Data Sheet (SDS)</td></tr>
+        <tr><td>I–VI</td><td>Fitzpatrick skin types</td></tr>
+        <tr><td>24 hrs</td><td>Wait after a failed attempt before rescheduling the exam</td></tr>
+        <tr><td>5 years</td><td>How long exam eligibility lasts (unlimited attempts, fee each time)</td></tr>
+      </tbody></table></div>
+    </section>
+  </div>
+
+  <!-- PRACTICE TEST -->
+  <div class="panel" id="p-test" hidden>
+    <div id="testStart" class="panel">
+      <div class="box">
+        <h2>Practice test</h2>
+        <p>Questions are drawn in the same section mix as the real exam. Like the real test, you won't see right or wrong until you submit. 70% passes.</p>
+        <div class="modes">
+          <button class="mode" data-kind="full"><b>Full practice exam</b><span>75 questions · 105 minutes</span></button>
+          <button class="mode" data-kind="quick"><b>Quick quiz</b><span>20 questions · 28 minutes</span></button>
+        </div>
+      </div>
+      <div class="box" id="history">
+        <h2>Your scores</h2>
+        <div id="historyBody"><p>No tests yet. Your scores will appear here after your first practice test.</p></div>
+      </div>
+    </div>
+    <div id="testRun" class="panel" hidden>
+      <div class="thead">
+        <span class="count" id="tPos"></span>
+        <span class="timer" id="tTimer" aria-live="off"></span>
+      </div>
+      <div class="box">
+        <div class="tagrow"><span class="tag" id="tTag"></span><button class="tbtn" id="tFlag" aria-pressed="false">Flag for review</button></div>
+        <p class="qtext" id="tQ"></p>
+        <div class="opts" id="tOpts" role="radiogroup" aria-labelledby="tQ"></div>
+      </div>
+      <div class="row" style="justify-content:space-between">
+        <button class="btn plain" id="tPrev">‹ Back</button>
+        <button class="btn got" id="tNext">Next ›</button>
+      </div>
+      <div class="box">
+        <div class="row" style="justify-content:space-between"><b>All questions</b><span class="count" id="tAnswered"></span></div>
+        <div class="grid" id="tGrid"></div>
+        <div class="legend"><span class="ln">Unanswered</span><span class="lg" style="--good:var(--accent)">Answered</span><span style="color:var(--warn)">● Flagged</span></div>
+        <div id="submitArea" class="row"><button class="btn got" id="tSubmit">Submit test</button></div>
+      </div>
+    </div>
+    <div id="testResult" class="panel" hidden></div>
+  </div>
+
+  <!-- OWNER REPORT -->
+  <div class="panel" id="p-report" hidden>
+    <div id="reportBody"><div class="box"><p>Loading study activity…</p></div></div>
+  </div>
+
+  <p class="notice" id="trackNote" hidden></p>
+  <p class="foot">Sources: PSI Texas Esthetician Candidate Information Bulletin (Jan 2026); 16 Texas Administrative Code Chapter 83 (§§83.20, 83.25, 83.26, 83.70, 83.101–83.114, 83.202); Milady Standard Esthetics: Fundamentals. Textbook details (Wood's lamp colors, steamer distance, wait times) vary slightly between editions; when a question asks for a rule, the Texas rule wins.</p>
+</div>
+
+<script>
+const CATS = {
+  L:{name:"Licensing & Regulation", short:"Licensing", w:20, items:15, d:"Health & safety, practitioner responsibilities, continuing education"},
+  I:{name:"Infection Control", short:"Infection Control", w:25, items:19, d:"Disinfecting, implements, equipment, exposure incidents, patch test, skin diseases & disorders"},
+  K:{name:"Skin Care", short:"Skin Care", w:16, items:12, d:"Physiology, skin analysis, skin types, skin conditions"},
+  F:{name:"Facial Treatments", short:"Facials", w:28, items:21, d:"Cleansing, extractions, exfoliation, masks, moisturizers, massage, products, machines, contraindications"},
+  H:{name:"Hair Removal", short:"Hair Removal", w:11, items:8, d:"Methods of hair removal and contraindications"}
+};
+const CC = {L:"var(--cL)",I:"var(--cI)",K:"var(--cK)",F:"var(--cF)",H:"var(--cH)"};
+const ORDER = ["L","I","K","F","H"];
+
+const RAW = [
+// ───────── LICENSING & REGULATION
+["L","How is the Texas esthetician written exam built, and what score passes?",`<ul><li><b>75 scored</b> questions in <b>105 minutes</b></li><li>Plus <b>7 unscored</b> trial questions with 10 extra minutes</li><li><b>70%</b> passes, which is <b>53 of 75</b></li><li>Closed book; score shows on screen at the end</li></ul>`,`Unscored questions look exactly like real ones. Answer every question and never leave one blank.`,"PSI Bulletin"],
+["L","Which references are the exam questions written from?",`<ul><li>Texas Administrative Code, <b>Chapter 83</b> (TDLR rules)</li><li>Texas Occupations Code, <b>Chapter 1603</b></li><li>Milady Standard Esthetics: Fundamentals, 12th ed.</li><li>Milady Standard Foundations</li><li>Pivot Point Fundamentals: Esthetics</li></ul>`,`When the textbook and the Texas rule differ, answer with the Texas rule.`,"PSI Bulletin"],
+["L","Who licenses estheticians in Texas, and who gives the exam?",`<b>TDLR</b> (Texas Department of Licensing and Regulation) issues licenses and enforces the rules. TDLR contracts <b>PSI Services</b> to deliver the written and practical exams.`,`The Texas Commission of Licensing and Regulation adopts the rules; TDLR runs the program day to day.`,"PSI Bulletin"],
+["L","What does a person need to get a Texas esthetician license?",`<ul><li>Be at least <b>17 years old</b></li><li>Complete <b>750 hours</b> at a TDLR-licensed school</li><li>Pass the <b>written exam</b>, then the <b>practical exam</b></li><li>Apply and pay the fee; no acts that are grounds for denial</li></ul>`,`Age 17, not 18, is a classic trick answer.`,"16 TAC §83.200"],
+["L","How are the 750 esthetician training hours split?",`<b>450 hours</b> theory and related practice (anatomy, skin diseases, analysis, machines, basic facials, chemistry, hair removal, sanitation, laws and rules, business, makeup) + <b>300 hours</b> specialty practice (advanced facials, hair removal with devices or preparations, makeup, semi-permanent eyelash extensions).`,`Lash extensions are part of the esthetician curriculum, so an esthetician may apply them.`,"16 TAC §83.202"],
+["L","How many of the 750 hours may be distance education? Field trips?",`<ul><li>Distance education: up to <b>375 hours</b>, <b>theory only</b></li><li>Field trips: up to <b>75 hours</b>, instructor supervising, <b>no hours for travel</b></li></ul>`,`Practical (hands-on) hours can never be done online.`,"16 TAC §83.202"],
+["L","Hours for related licenses: eyelash extension specialist and esthetician/manicurist?",`<ul><li>Eyelash extension specialty: <b>320 hours</b></li><li>Esthetician/manicurist: <b>800 hours</b>, or hold both an active esthetician and an active manicurist license and apply</li><li>Manicurist alone: 600 hours</li></ul>`,`Know 750 / 320 / 800 / 600.`,"16 TAC §83.202"],
+["L","Exam rules: order, retakes, and how long eligibility lasts",`<ul><li>Pass the <b>written before</b> the practical</li><li>Failed? Wait <b>24 hours</b> before rescheduling; no same-day retake</li><li>Eligibility good for <b>5 years</b>, unlimited attempts, new fee each attempt</li><li>Reschedule at least <b>2 days</b> ahead or lose the fee</li></ul>`,`If she fails, the emailed score report shows strengths and weaknesses by section. Study those sections first.`,"PSI Bulletin"],
+["L","How often does a Texas esthetician license renew?",`Every <b>2 years</b>. Renewal requires the application, the fee, and <b>continuing education</b> completed before the license expires.`,`Not receiving a renewal notice from TDLR does not excuse a late renewal.`,"16 TAC §83.25–83.26"],
+["L","How many continuing education (CE) hours are required to renew?",`At least <b>4 hours</b> of TDLR-approved courses:<ul><li><b>1 hour sanitation</b></li><li><b>1 hour human trafficking prevention</b> (renewals on or after Sept 1, 2025)</li><li><b>2 hours</b> in any other approved topic</li></ul>`,`Mnemonic: 4 = 1 + 1 + 2.`,"16 TAC §83.25"],
+["L","What CE does someone licensed for 15 or more years need?",`Only <b>1 hour of sanitation</b> plus <b>1 hour of human trafficking prevention</b>.`,`15+ years shrinks the requirement to 2 hours, but sanitation is never skipped.`,"16 TAC §83.25(k)"],
+["L","CE fine print: timing, repeats, and records",`<ul><li>Complete within the <b>2 years before</b> the renewal date</li><li>Same course can't count <b>twice</b></li><li>Only courses <b>registered with TDLR</b> count</li><li>Keep the certificate <b>2 years</b> after finishing; TDLR may check during an inspection</li></ul>`,`Approved CE topics include sanitation, the law and rules, curriculum topics, mental health awareness, and human trafficking prevention.`,"16 TAC §83.25"],
+["L","What happens if the license is renewed late?",`There is an <b>unlicensed period</b> from the expiration date until the renewed license is issued. She may <b>not perform any services</b> during that gap.`,`Working on an expired license is unlicensed practice, a violation.`,"16 TAC §83.26(c)"],
+["L","Where may an esthetician legally perform services?",`In a <b>licensed facility</b> (establishment or school). Outside one only when the appointment is <b>booked through a licensed facility</b> and the client is:<ul><li>Unable to come in due to illness or physical or mental incapacity, or</li><li>Getting ready for a <b>special event</b>, at that event's location</li></ul>Digitally prearranged remote services booked through a remote service business's network are also allowed.`,`Doing facials from home with no licensed establishment is not allowed.`,"16 TAC §83.70"],
+["L","How must the license be displayed?",`Posted <b>near her work station in public view</b> or available at the <b>reception desk</b>, with a current photo at least <b>1½ × 1½ inches</b> on the front (or a digital image of both). The photo may not cover any information.`,`Two acceptable places: station or front desk.`,"16 TAC §83.70"],
+["L","How soon must TDLR be told about a name or address change?",`Within <b>30 days</b>, in writing. TDLR may send all notices to the last address on file.`,`30 days for both.`,"16 TAC §83.70"],
+["L","What is the dress requirement for practitioners?",`Clean <b>top and bottom outer garments</b> and <b>footwear</b> while performing services. Lingerie does not count as an outer garment.`,`The practical exam also requires closed-toe shoes.`,"16 TAC §83.70(i)"],
+["L","Can a specialty licensee do services outside the license?",`No. A specialty practitioner may perform <b>only</b> the practice the specialty license authorizes. An esthetician cannot do nails or cut hair.`,`Scope questions: skin care, makeup, temporary hair removal, brow and lash tinting, lash extensions = yes. Nails, hair, electrolysis, laser, injections = no.`,"16 TAC §83.70(d)"],
+["L","Which services fall inside the esthetician license?",`<ul><li>Facials and skin care: cleansing, stimulating, massaging, exfoliating, masks, machines</li><li>Makeup application</li><li>Temporary hair removal: waxing, tweezing, sugaring, threading, depilatories</li><li>Tinting eyebrows and eyelashes</li><li>Semi-permanent eyelash extensions</li></ul>`,`Anything that reaches the dermis (needles, deep peels, injections) is outside the license.`,"Occ. Code 1603 / §83.202"],
+["L","Which products and tools are banned in Texas salons?",`<ul><li><b>MMA</b> (methyl methacrylate liquid monomer)</li><li><b>Credo blades</b> and razor-type callus shavers</li><li><b>Alum or astringent in stick or lump form</b></li><li><b>Formalin (formaldehyde)</b> fumigants, tablets or liquid</li></ul>Even <b>possessing</b> one on licensed premises is a violation.`,`Powdered or liquid alum is allowed; only stick and lump alum are banned.`,"16 TAC §83.112"],
+["L","What is the Texas rule about the dermis?",`Using any product, preparation or procedure that <b>comes into contact with or penetrates the dermis</b> is prohibited.`,`This is why estheticians do only superficial exfoliation and no needling or deep peels.`,"16 TAC §83.112(c)"],
+["L","When may a practitioner refuse or must not perform a service?",`When there's reason to believe the client has a <b>contagious condition</b> (head lice, nits, ringworm, conjunctivitis) or <b>inflamed, infected, broken, raised or swollen skin</b>, or an <b>open wound or sore</b> in the area to be serviced.`,`Don't diagnose. Decline politely and refer to a physician.`,"16 TAC §83.102(b)"],
+["L","Who is responsible for following the health and safety rules?",`<b>Every practitioner</b> is personally responsible, and the establishment is too. "My manager told me to" is not a defense.`,`Expect a question like "Who is responsible for sanitation at your station?" The answer is you.`,"16 TAC §83.70(j)"],
+["L","Establishment rules: restroom, water, and floors",`<ul><li>At least <b>one restroom</b> on or near the premises; <b>no chemicals stored</b> in it</li><li><b>Hot and cold running water</b> at all times</li><li>Floors where services happen: <b>non-porous, washable</b> (carpet only in other areas)</li><li>Floors cleaned <b>daily</b></li></ul>`,`Walls, ceilings and fixtures must be clean and in good repair; cracks get filled.`,"16 TAC §83.114"],
+["L","Establishment rules: food, living space, and animals",`<ul><li>No food or drinks <b>prepared for sale</b>; pre-packaged food and drinks are fine</li><li>No <b>living or sleeping</b> on licensed premises</li><li>Attached to a home? Needs a <b>separate entrance</b>; the connecting door stays <b>closed</b> during business hours</li><li><b>Service animals only</b>; covered aquariums allowed</li></ul>`,`A salon pet cat is a violation.`,"16 TAC §83.114"],
+["L","What does Texas require for ventilation and product labels?",`<ul><li>Eliminate strong odors with adequate <b>ventilation</b> (exhaust fans, air filtration, fresh air)</li><li>Keep all products <b>labeled per OSHA</b> requirements</li></ul>`,`Unlabeled spray bottles of disinfectant are a common inspection violation.`,"16 TAC §83.102, 83.114"],
+["L","Which federal agency handles what?",`<ul><li><b>OSHA</b>: worker safety, Hazard Communication Standard, Safety Data Sheets</li><li><b>EPA</b>: registers disinfectants (check for an EPA registration number)</li><li><b>FDA</b>: regulates cosmetics and drugs</li><li><b>TDLR</b>: state licensing and salon rules</li></ul>`,`Disinfectant = EPA. Cosmetic = FDA. Worker = OSHA.`,"Milady"],
+
+// ───────── INFECTION CONTROL
+["I","Name the three levels of decontamination from least to most powerful.",`<ol><li><b>Cleaning</b>: removes visible dirt and debris, lowers germs</li><li><b>Disinfecting</b>: kills most bacteria, viruses and fungi on non-porous surfaces (not spores)</li><li><b>Sterilizing</b>: destroys all microbial life, including spores</li></ol>`,`Cleaning always comes first; it is never skipped.`,"Milady"],
+["I","Why must tools be cleaned before they are disinfected?",`Disinfectants become <b>inactivated and ineffective</b> when items are visibly contaminated with debris, hair, dirt or particles. Scrub with soap and water first, rinse, then disinfect.`,`Texas rule wording: debris inactivates the disinfectant.`,"16 TAC §83.101"],
+["I","What kind of disinfectant does Texas require for tools and surfaces?",`An <b>EPA-registered</b> disinfectant that is <b>bactericidal, fungicidal and virucidal</b> (kills bacteria, fungi and viruses), or a properly mixed chlorine bleach solution, used according to the manufacturer's instructions.`,`Bacteria + fungi + viruses. If an answer is missing one of the three, it's wrong.`,"16 TAC §83.101, 83.103"],
+["I","Which disinfectant is required for blood or body fluid on a surface?",`Clean up immediately with an <b>EPA-registered hospital-grade</b> disinfectant, a <b>tuberculocidal</b> disinfectant, or a blood and body fluid <b>chlorine bleach</b> solution, per the label.`,`Blood = hospital-grade, tuberculocidal, or bleach.`,"16 TAC §83.111(b)"],
+["I","How often must immersion disinfectant be changed?",`Prepared <b>fresh daily</b>, or sooner if it becomes <b>diluted or soiled</b>.`,`Cloudy jar = change it now.`,"16 TAC §83.101(a)(3)"],
+["I","List the Texas rules for chlorine bleach solutions.",`<ul><li>Mix <b>fresh daily</b>; dispose of used solution daily</li><li>Keep in a <b>closed, covered</b> container out of <b>sunlight</b></li><li>Store away from other chemicals (monomers, alcohol, other disinfectants) and <b>flame</b></li><li>Recommended time: <b>2 minutes</b>, or <b>5 minutes</b> for blood contamination</li></ul>`,`2 minutes routine, 5 minutes blood.`,"16 TAC §83.101(b)"],
+["I","What is contact time (dwell time)?",`How long a surface or tool must stay <b>visibly wet</b> with disinfectant to kill the germs on the label. If it dries early, reapply.`,`Spraying and wiping right away doesn't disinfect.`,"Milady"],
+["I","How are electrical machines that can't be submerged disinfected?",`<b>Wiped clean and disinfected</b> (with an EPA-registered spray or wipe) <b>before each use</b> on a client.`,`Steamer arms, high-frequency handles, galvanic rollers: clean, then disinfect.`,"16 TAC §83.102(e)"],
+["I","How must clean, disinfected tools be stored?",`In a <b>clean, dry, debris-free</b> place (drawer, case, rolling tray, hook), <b>separate from soiled</b> items. Non-cosmetology supplies go in separate drawers.`,`A UV sanitizer may be used only as a <b>storage container</b>. It does not disinfect.`,"16 TAC §83.102(f)"],
+["I","What size container is needed for liquid disinfection?",`One <b>large enough to fully immerse</b> all tools and implements.`,`Handles sticking out of the jar = not disinfected.`,"16 TAC §83.102(h)"],
+["I","What must happen to the facial bed or chair between clients?",`The bed or chair <b>and the headrest</b> must be <b>cleaned and disinfected after every client</b>. It must be made of or covered in <b>non-porous</b> material.`,`Facial bed: every client. General salon chairs and dryers don't need it every client, but facial beds always do.`,"16 TAC §83.104(c)"],
+["I","Tweezers and comedone extractors between clients?",`<b>Cleaned and disinfected after each client.</b>`,`Metal tools are multi-use; they get disinfected, not thrown away.`,"16 TAC §83.104(d)"],
+["I","Which esthetics items are single-use and must be thrown away after one client?",`Cotton pads, cotton balls, <b>gauze</b>, <b>wooden applicators</b>, disposable <b>gloves</b>, tissues, <b>thread</b>, disposable wipes, <b>lancets</b>, <b>fabric (wax) strips</b>, and similar items.`,`If it's porous and can't be disinfected, it's single-use.`,"16 TAC §83.104(e)"],
+["I","Which items must be replaced with clean ones for each client?",`Disposable and terry towels, <b>hair caps, headbands</b>, brushes, <b>gowns</b>, <b>makeup brushes</b>, <b>spatulas</b> that touch skin or product, and sponges.`,`New headband and towels every client; reusable brushes get cleaned between clients.`,"16 TAC §83.104(f)"],
+["I","What are the three approved ways to avoid double-dipping?",`<ol><li>Dispose of the remaining product before the next client, <b>or</b></li><li>Use a <b>single-use disposable</b> applicator and throw it away, <b>or</b></li><li>Use an <b>applicator (pump/squeeze) bottle</b></li></ol>Applicators must never be re-dipped into product.`,`Applies to creams, masks, waxes, lotions, oils, cosmetics.`,"16 TAC §83.104(g)"],
+["I","When are gloves required for esthetic services in Texas?",`During <b>any type of extraction</b> (required by rule). Gloves are also standard for waxing and required for blood exposure cleanup.`,`Extraction without gloves is a direct rule violation.`,"16 TAC §83.104(a)"],
+["I","Texas towel and trash rules",`<ul><li>Clean towel for <b>every client</b></li><li>Wash towels in <b>hot water and chlorine bleach</b></li><li>Soiled towels go in a suitable receptacle right after use</li><li>Trash containers <b>emptied daily</b>, kept clean with washing or plastic liners</li></ul>`,`Hot water + bleach is the Texas towel answer.`,"16 TAC §83.102"],
+["I","When must a practitioner wash or sanitize hands?",`<b>Before every service</b> and as needed during it, using soap and water or hand sanitizer. Proper hand washing means lathering at least <b>20 seconds</b> with liquid soap and drying with a clean disposable towel.`,`Liquid pump soap, not bar soap.`,"16 TAC §83.102 / Milady"],
+["I","A client starts bleeding slightly. What may touch the area?",`Never touch an open sore or wound. To stop minor bleeding, apply <b>styptic powder, powdered alum, or a liquid bandage</b> with a <b>disposable cotton-tipped applicator</b> and throw it away immediately.`,`Never stick or lump alum.`,"16 TAC §83.111(a)"],
+["I","Walk through an exposure incident (blood) step by step.",`<ol><li>Stop the service</li><li>Put on <b>gloves</b></li><li>Clean the injured area</li><li>Apply antiseptic and a bandage</li><li>Clean the client's area; <b>double-bag</b> contaminated items</li><li>Clean and disinfect tools and the station (hospital-grade or tuberculocidal)</li><li>Remove gloves; wash hands</li><li>Recommend medical follow-up if needed</li></ol>`,`Practical exam order: gloves, clean cut, bandage, dispose, sanitize hands.`,"Milady / PSI"],
+["I","A porous item (cotton, wax strip) touches blood. What do you do?",`<b>Double-bag</b> it immediately and discard in a <b>closed trash container or biohazard box</b>.`,`Porous + blood = double-bag and toss.`,"16 TAC §83.111(d)"],
+["I","A metal tool touches blood. What do you do?",`Clean it immediately, then disinfect with an <b>EPA hospital-grade</b> or <b>tuberculocidal</b> disinfectant per the label, <b>or</b> fully immerse in blood and body fluid bleach solution for <b>5 minutes</b>.`,`5 minutes in bleach.`,"16 TAC §83.111(c)"],
+["I","What are Standard Precautions?",`CDC guidelines to treat <b>all blood and body fluids as potentially infectious</b>, whether or not a person looks sick, and to use PPE (gloves, etc.). Formerly called Universal Precautions.`,`Assume everyone could be infectious.`,"Milady"],
+["I","Which bloodborne pathogens matter most in the salon?",`<b>HIV</b>, <b>hepatitis B (HBV)</b>, and <b>hepatitis C (HCV)</b>. Hepatitis B is more resistant than HIV and can survive on surfaces much longer; a vaccine exists for HBV.`,`Hepatitis is harder to kill than HIV.`,"Milady"],
+["I","What is a Safety Data Sheet (SDS)?",`Manufacturer document with <b>16 sections</b> covering a product's ingredients, hazards, safe handling, storage, first aid, fire and spill steps. Required by <b>OSHA</b> for every product on site. Formerly MSDS.`,`Spilled a chemical and don't know what to do? Check the SDS.`,"Milady"],
+["I","Antiseptic vs disinfectant",`<b>Antiseptics</b> are gentle enough for <b>skin</b> and reduce germs. <b>Disinfectants</b> are for <b>tools and surfaces</b> and are too harsh for skin.`,`Never disinfect tools with an antiseptic, and never put disinfectant on skin.`,"Milady"],
+["I","Safe handling of disinfectants",`<ul><li>Wear <b>gloves and safety glasses</b></li><li>Follow the label dilution exactly; <b>add disinfectant to water</b></li><li><b>Never mix</b> chemicals together</li><li>Keep containers closed and labeled</li></ul>`,`More concentrate is not more effective; follow the label.`,"Milady"],
+["I","Quats and phenolics: what to know",`<ul><li><b>Quats</b> (quaternary ammonium compounds): common, low odor; many need about <b>10 minutes</b> contact (always follow the label)</li><li><b>Phenolics</b>: effective but can damage <b>plastic and rubber</b> and irritate skin; wear gloves</li></ul>`,`Exam may ask which disinfectant softens rubber or plastic: phenolic.`,"Milady"],
+["I","Pathogenic vs nonpathogenic bacteria",`<b>Nonpathogenic</b> bacteria are harmless or helpful and make up most bacteria (about 70%). <b>Pathogenic</b> bacteria cause disease.`,`Most bacteria are harmless.`,"Milady"],
+["I","Name the three bacteria shapes and examples.",`<ul><li><b>Cocci</b>: round. Staphylococci (clusters: boils, pustules, MRSA), streptococci (chains: strep throat, blood poisoning), diplococci (pairs: pneumonia)</li><li><b>Bacilli</b>: rod-shaped, most common; tetanus, tuberculosis, typhoid</li><li><b>Spirilla</b>: spiral; syphilis, Lyme disease</li></ul>`,`Staph = bunches like grapes; strep = string.`,"Milady"],
+["I","How do bacteria move and reproduce?",`<b>Bacilli and spirilla</b> move with hair-like <b>flagella or cilia</b>; <b>cocci</b> rarely move on their own. Bacteria reproduce by <b>binary fission</b> (splitting in two) in the active stage; some form <b>spores</b> to survive harsh conditions.`,`Spores are why sterilization exists.`,"Milady"],
+["I","Viruses: key facts",`A virus can only reproduce <b>inside a host cell</b>. <b>Antibiotics don't work</b> on viruses; vaccines help prevent some. Examples: HIV, hepatitis, herpes simplex, common cold, flu, warts (HPV).`,`Herpes cold sores and warts are viral and contagious.`,"Milady"],
+["I","Fungi and parasites to recognize",`<ul><li><b>Ringworm (tinea)</b>: a <b>fungus</b>, not a worm; red ring-shaped patch; contagious</li><li><b>Head lice</b> (pediculosis capitis) and <b>scabies</b> (itch mite): parasites; contagious</li></ul>`,`All of these mean: do not service.`,"Milady"],
+["I","Local vs systemic infection; what is pus?",`<b>Local</b> infection stays in one area (pimple, abscess). <b>Systemic</b> infection spreads through the body. <b>Pus</b> (bacteria, white blood cells, dead cells) signals a bacterial infection.`,`Contagious = communicable = spreads person to person.`,"Milady"],
+["I","What is a biofilm?",`A colony of microorganisms that <b>sticks to surfaces</b> inside a protective slime (pipes, tubing, machines). It resists cleaning and disinfection.`,`Thorough scrubbing breaks up biofilm.`,"Milady"],
+["I","What is a patch test, and how is it done?",`A <b>predisposition (allergy) test</b>: apply a small amount of product <b>behind the ear or inside the elbow</b> <b>24–48 hours</b> before the service. Used before <b>brow and lash tinting</b>, lash adhesive, and new products for sensitive clients.`,`Patch test is listed by name on the exam outline. Know where and how long.`,"Milady / PSI"],
+["I","What does a positive patch test look like, and what do you do?",`Redness, swelling, itching, burning, or blisters at the test site. <b>Do not perform the service.</b> Document it on the client record.`,`Negative = no reaction = OK to proceed.`,"Milady"],
+["I","Allergic vs irritant contact dermatitis",`<b>Irritant</b>: direct damage from a harsh substance, can happen to anyone. <b>Allergic</b>: immune reaction that develops after repeated exposure (sensitization). Both are common occupational problems; gloves help prevent them.`,`Sensitization can appear months after using a product without trouble.`,"Milady"],
+["I","Primary skin lesions: list them",`Bulla, cyst, macule, nodule, papule, pustule, tubercle, tumor, vesicle, wheal. These appear first in a disease.`,`Secondary lesions develop later: crust, excoriation, fissure, keloid, scale, scar, ulcer.`,"Milady"],
+["I","Macule vs papule vs pustule",`<ul><li><b>Macule</b>: flat spot, color change only (freckle)</li><li><b>Papule</b>: small raised bump, <b>no fluid</b></li><li><b>Pustule</b>: raised, <b>contains pus</b></li></ul>`,`Macule = flat. "Pus" is in pustule.`,"Milady"],
+["I","Vesicle, bulla, wheal",`<ul><li><b>Vesicle</b>: small blister with clear fluid (poison ivy)</li><li><b>Bulla</b>: large blister</li><li><b>Wheal</b>: itchy, swollen lesion that comes and goes (hives, mosquito bite)</li></ul>`,`Hives = wheal.`,"Milady"],
+["I","Nodule, tubercle, tumor, cyst",`<ul><li><b>Tubercle/nodule</b>: solid raised lump larger than a papule</li><li><b>Tumor</b>: large abnormal mass</li><li><b>Cyst</b>: closed sac containing fluid or semi-solid matter, deeper in the skin</li></ul>`,`Cystic acne is the most severe acne; refer to a physician.`,"Milady"],
+["I","Excoriation, fissure, keloid, ulcer",`<ul><li><b>Excoriation</b>: scratch or abrasion</li><li><b>Fissure</b>: crack in the skin (chapped lips)</li><li><b>Keloid</b>: thick raised scar from excess collagen; more likely in darker skin</li><li><b>Ulcer</b>: open, deeper lesion</li></ul>`,`Keloid-prone clients need gentle exfoliation.`,"Milady"],
+["I","Open vs closed comedo",`<b>Open comedo (blackhead)</b>: follicle filled with sebum, open at the surface; oxidation turns it dark. <b>Closed comedo (whitehead)</b>: covered by skin, no opening.`,`Blackheads are dark from oxidation, not dirt.`,"Milady"],
+["I","What are milia?",`Tiny white <b>keratin-filled cysts</b> under the surface with <b>no opening</b>, common around the eyes and cheeks and on dry skin.`,`Milia aren't whiteheads; there's no follicle opening.`,"Milady"],
+["I","Acne: cause and grades",`Acne involves excess sebum, dead cell buildup in the follicle, and <b>C. acnes</b> bacteria, which are <b>anaerobic</b> (die with oxygen). Grades: <b>I</b> few comedones, <b>II</b> many comedones plus some papules, <b>III</b> red inflamed papules and pustules, <b>IV</b> cysts and nodules (refer to physician).`,`Benzoyl peroxide works by delivering oxygen to the follicle.`,"Milady"],
+["I","Rosacea: what is it and how do you treat it?",`Chronic condition with <b>redness, flushing, dilated capillaries</b>, and sometimes papules/pustules on the cheeks and nose. Not contagious. Avoid triggers: <b>heat, steam, vigorous massage, hot wax, spicy food, alcohol, sun</b>. Use calming, cool treatments.`,`No steam, no vacuum, no stimulating massage on rosacea.`,"Milady"],
+["I","Telangiectasia (couperose)",`Visibly <b>dilated or distended capillaries</b>, often on cheeks and nose. Avoid <b>heat, vacuum suction, harsh exfoliation and strong massage</b> over those areas.`,`Couperose = broken capillaries.`,"Milady"],
+["I","Seborrheic dermatitis",`Inflamed, <b>oily, flaky</b> skin, often around the eyebrows, nose and scalp (dandruff). Not contagious.`,`Seborrhea = too much oil; asteatosis = too little oil.`,"Milady"],
+["I","Eczema vs psoriasis",`<b>Eczema</b>: dry, itchy, red, inflamed patches; may weep. <b>Psoriasis</b>: red patches with <b>silvery-white scales</b>, often elbows, knees, scalp. Neither is contagious. Don't treat over broken or inflamed areas; refer.`,`Silvery scales = psoriasis.`,"Milady"],
+["I","Herpes simplex (fever blister/cold sore)",`A recurring <b>viral</b> infection, <b>contagious</b>, usually on the lips. Waxing, peels, and heat can trigger an outbreak. <b>Never service over an active sore.</b>`,`Ask about cold-sore history before lip waxing or peels.`,"Milady"],
+["I","Impetigo and conjunctivitis",`<b>Impetigo</b>: <b>bacterial</b>, highly contagious, honey-colored crusty sores, common in children. <b>Conjunctivitis (pinkeye)</b>: contagious eye infection. Both mean no service.`,`Conjunctivitis is named in the Texas rule as a contagious condition.`,"Milady / §83.102"],
+["I","Pigment disorders: too much pigment",`<ul><li><b>Melasma</b>: hormonal patches (pregnancy, birth control), "mask of pregnancy"</li><li><b>Lentigines</b>: freckles</li><li><b>Chloasma</b>: flat brown "liver spots"</li><li><b>Nevus</b>: birthmark; <b>stain</b> (port wine)</li><li><b>PIH</b>: dark marks left after inflammation or injury</li></ul>`,`Hyper = more pigment.`,"Milady"],
+["I","Pigment disorders: too little pigment",`<ul><li><b>Albinism</b>: congenital absence of melanin</li><li><b>Leukoderma</b>: light patches from decreased pigment</li><li><b>Vitiligo</b>: white patches from loss of pigment; needs sun protection</li></ul>`,`Hypo = less pigment.`,"Milady"],
+["I","Hypertrophies of the skin",`<ul><li><b>Keratoma</b>: callus (thick buildup)</li><li><b>Skin tag</b>: small outgrowth, often neck or underarms</li><li><b>Mole</b>: pigmented spot, may be raised; never remove hair from or wax over one without a doctor's OK</li><li><b>Verruca</b>: wart, <b>viral and contagious</b></li></ul>`,`Warts spread; don't treat them.`,"Milady"],
+["I","Sweat gland disorders",`<ul><li><b>Anhidrosis</b>: too little sweating</li><li><b>Bromhidrosis</b>: foul-smelling sweat</li><li><b>Hyperhidrosis</b>: excessive sweating</li><li><b>Miliaria rubra</b>: prickly heat rash</li></ul>`,`An- = without; hyper- = too much; brom- = odor.`,"Milady"],
+["I","Oil gland disorders",`<ul><li><b>Asteatosis</b>: dry, scaly skin from too little sebum (aging, cold)</li><li><b>Seborrhea</b>: excess oil</li><li><b>Steatoma</b>: sebaceous cyst ("wen"), often on the scalp</li></ul>`,`Steatoma: think "stuck sebum sac".`,"Milady"],
+["I","Three skin cancers, mildest to most serious",`<ol><li><b>Basal cell carcinoma</b>: most common, least severe; pearly nodule</li><li><b>Squamous cell carcinoma</b>: scaly red papules or nodules; more serious</li><li><b>Malignant melanoma</b>: most dangerous; dark, irregular, changing mole</li></ol>`,`Never diagnose. Suggest the client see a dermatologist.`,"Milady"],
+["I","ABCDEs of melanoma",`<b>A</b>symmetry · <b>B</b>order irregular · <b>C</b>olor varied · <b>D</b>iameter larger than a pencil eraser (6 mm) · <b>E</b>volving (changing).`,`Spot it, mention it gently, refer.`,"Milady"],
+["I","Furuncle, carbuncle, folliculitis",`<b>Furuncle</b>: a boil, staph infection of a follicle. <b>Carbuncle</b>: a cluster of boils. <b>Folliculitis</b>: inflamed follicles; <b>pseudofolliculitis</b>: ingrown hairs, often after shaving or waxing, common on curly hair.`,`Boils are infected; don't service.`,"Milady"],
+
+// ───────── SKIN CARE (physiology, analysis, types, conditions)
+["K","Three main layers of the skin, top to bottom",`<ol><li><b>Epidermis</b>: outer layer, no blood vessels</li><li><b>Dermis</b>: true skin; blood vessels, nerves, glands, collagen</li><li><b>Subcutaneous layer</b> (hypodermis): fat (adipose) tissue that cushions and insulates</li></ol>`,`The epidermis has no blood supply; it gets nutrients from the dermis.`,"Milady"],
+["K","Five layers of the epidermis, outer to inner",`<ol><li>Stratum <b>corneum</b> (horny)</li><li>Stratum <b>lucidum</b> (clear)</li><li>Stratum <b>granulosum</b> (granular)</li><li>Stratum <b>spinosum</b> (spiny)</li><li>Stratum <b>basale</b> / germinativum (basal)</li></ol>`,`Mnemonic: "Come Let's Get Sun Burned".`,"Milady"],
+["K","Stratum corneum",`Outermost layer of <b>flat, dead, keratinized cells</b> that are constantly shed. It forms the barrier against water loss and germs. Exfoliation works here.`,`Superficial peels and scrubs target only this layer.`,"Milady"],
+["K","Stratum lucidum",`Thin, <b>clear</b> layer found mainly on the <b>palms and soles</b> (thick skin).`,`Lucid = clear.`,"Milady"],
+["K","Stratum spinosum and stratum basale",`<b>Spinosum</b>: spiny layer; contains <b>Langerhans cells</b> (immune defense). <b>Basale</b>: deepest layer; cells divide by <b>mitosis</b>, and <b>melanocytes</b> (pigment cells) live here.`,`New cells are born in the basal layer and rise to the surface.`,"Milady"],
+["K","Two layers of the dermis",`<b>Papillary layer</b> (upper): dermal papillae, capillaries, touch receptors, creates fingerprints. <b>Reticular layer</b> (deeper): <b>collagen and elastin</b>, sweat and oil glands, hair follicles, blood vessels, nerves.`,`Reticular = network of fibers.`,"Milady"],
+["K","Where is skin thickest and thinnest?",`Thickest on the <b>palms and soles</b>. Thinnest on the <b>eyelids</b>.`,`Use the lightest pressure and gentlest products around the eyes.`,"Milady"],
+["K","Six functions of the skin",`<b>S</b>ensation · <b>H</b>eat regulation · <b>A</b>bsorption · <b>P</b>rotection · <b>E</b>xcretion · <b>S</b>ecretion.`,`Mnemonic: SHAPES.`,"Milady"],
+["K","Collagen vs elastin",`<b>Collagen</b>: fibrous protein that gives skin <b>strength and firmness</b> (most of the dermis). <b>Elastin</b>: gives skin <b>elasticity</b> so it snaps back. Both are made by <b>fibroblasts</b> and break down with age and sun.`,`Wrinkles and sagging = collagen and elastin damage.`,"Milady"],
+["K","Sebaceous (oil) glands",`Produce <b>sebum</b> that lubricates skin and hair. Attached to <b>hair follicles</b>; most numerous on the face and scalp; absent on palms and soles.`,`Large pores (ostia) usually mean more oil activity.`,"Milady"],
+["K","Eccrine vs apocrine sweat glands",`<b>Eccrine</b>: all over the body, open directly onto skin, cool the body. <b>Apocrine</b>: underarms and genital area, attached to follicles, become active at puberty; their secretion causes body odor when bacteria break it down.`,`Apocrine = armpits.`,"Milady"],
+["K","Melanin and melanocytes",`<b>Melanocytes</b> in the basal layer make <b>melanin</b>, which protects against UV. <b>Eumelanin</b> = brown/black; <b>pheomelanin</b> = red/yellow. Everyone has about the same number of melanocytes; skin color depends on how much and which type is made.`,`Darker skin isn't more melanocytes; it's more melanin.`,"Milady"],
+["K","What is the acid mantle and normal skin pH?",`A protective film of <b>sebum and sweat</b> on the surface with a pH of about <b>4.5–5.5</b> (slightly acidic). It helps block bacteria and keep moisture in.`,`Harsh alkaline soaps strip the acid mantle.`,"Milady"],
+["K","How long is the adult skin cell turnover cycle?",`About <b>28 days</b> (4 weeks) in young adults; it slows with age.`,`Slower turnover is one reason mature skin looks dull.`,"Milady"],
+["K","The pH scale",`0–14. <b>7 is neutral</b>, below 7 acidic, above 7 alkaline. Each number is <b>10 times</b> stronger than the next.`,`pH 5 is 10× more acidic than pH 6, and 100× more than pH 7.`,"Milady"],
+["K","What is transepidermal water loss (TEWL)?",`Water evaporating out through the skin. A damaged barrier means more TEWL and dehydrated skin. Occlusive ingredients reduce it.`,`Dehydration = lacking water; often barrier damage.`,"Milady"],
+["K","Skin type vs skin condition",`<b>Skin type</b> is genetic and is based on <b>oil production</b>: normal, dry, oily, combination. A <b>skin condition</b> can change and be treated: dehydration, sensitivity, acne, hyperpigmentation, aging.`,`A trick question may call dehydration a "type". It's a condition.`,"Milady"],
+["K","Dry (alipidic) skin vs dehydrated skin",`<b>Dry / alipidic</b>: lacks <b>oil</b>; small pores; a skin type. <b>Dehydrated</b>: lacks <b>water</b>; tight, fine lines, flaking; a condition. Even oily skin can be dehydrated.`,`Treat dry with emollients; dehydrated with humectants.`,"Milady"],
+["K","Oily and combination skin",`<b>Oily</b>: excess sebum, larger pores, shine, prone to comedones. <b>Combination</b>: oily <b>T-zone</b> (forehead, nose, chin) with normal or dry cheeks.`,`T-zone = combination clue.`,"Milady"],
+["K","Sensitive skin",`Reacts easily: redness, flushing, irritation, often fair and thin with visible capillaries. Use gentle, fragrance-free products, short steam or none, and light pressure.`,`Sensitive skin is a condition, not a type.`,"Milady"],
+["K","Fitzpatrick scale",`Rates skin's reaction to sun from <b>Type I</b> (very fair, always burns, never tans) to <b>Type VI</b> (deeply pigmented, rarely burns).`,`Higher types (IV–VI) have more risk of post-inflammatory hyperpigmentation and keloids, so be gentle with peels and aggressive treatments.`,"Milady"],
+["K","Glogau scale",`Classifies <b>photoaging / wrinkles</b> into four types: I no wrinkles, II wrinkles in motion, III wrinkles at rest, IV only wrinkles.`,`Fitzpatrick = sun reaction; Glogau = wrinkles.`,"Milady"],
+["K","How is a skin analysis done?",`<ol><li>Review intake form and consult</li><li><b>Cleanse</b> the skin first</li><li><b>Cover the client's eyes</b> with pads</li><li>Look through the <b>magnifying lamp</b>; feel by touch (palpation)</li><li>Use a <b>Wood's lamp</b> if needed</li><li>Record findings and plan on the client chart</li></ol>`,`Analysis happens after cleansing; makeup hides the truth.`,"Milady"],
+["K","What does a Wood's lamp show?",`A filtered <b>UV (black) light</b> used in a darkened room, eyes covered. Typical colors:<ul><li>Normal skin: <b>blue-white</b></li><li>Thick dead cell layer: <b>white</b></li><li>Oily areas / comedones: <b>yellow-orange or pink</b></li><li>Dehydrated / thin: <b>light violet to purple</b></li><li>Pigmentation / sun damage: <b>brown</b></li></ul>`,`Exact shades vary a little by textbook; brown = pigment and orange-yellow = oil are the safest answers.`,"Milady"],
+["K","Intrinsic vs extrinsic aging",`<b>Intrinsic</b>: genetics and time, which we can't control. <b>Extrinsic</b>: outside factors such as <b>sun (the biggest)</b>, smoking, pollution, stress, poor diet.`,`Daily broad-spectrum sunscreen is the best anti-aging product.`,"Milady"],
+["K","UVA vs UVB",`<b>UVA</b> = <b>Aging</b>: penetrates deeper into the dermis, passes through glass, causes wrinkles and pigment. <b>UVB</b> = <b>Burning</b>: affects the epidermis, causes sunburn. <b>SPF</b> measures UVB protection; <b>broad spectrum</b> covers both.`,`A for aging, B for burning.`,"Milady"],
+["K","Free radicals and antioxidants",`<b>Free radicals</b> are unstable molecules (from sun, pollution, smoke) that damage cells, collagen and DNA. <b>Antioxidants</b> (vitamins <b>C and E</b>, green tea) neutralize them.`,`Vitamin C = antioxidant + brightening.`,"Milady"],
+["K","What belongs on the client intake / health form?",`Medications (prescription, topical, Accutane, retinoids, blood thinners), allergies, medical conditions, pregnancy, recent procedures, skin care routine, and a <b>signature</b>. Update it at <b>every visit</b> and keep it on file.`,`The intake form is how you catch contraindications.`,"Milady"],
+["K","What is a contraindication?",`A condition, medication or factor that means a service <b>should not be done</b> (or must be changed) because it could harm the client.`,`If unsure, don't treat. Get a physician's release.`,"Milady"],
+["K","Do pores open and close?",`<b>No.</b> Pores (ostia) have no muscles. Warmth and steam <b>soften sebum</b> so it's easier to remove; cool water or toner only makes pores <b>look</b> smaller.`,`Common trick question.`,"Milady"],
+
+// ───────── FACIAL TREATMENTS
+["F","Steps of a basic facial in order",`<ol><li>Consultation and intake</li><li>Drape client (head wrap covers hair)</li><li>Remove eye makeup and lipstick; <b>cleanse</b></li><li><b>Skin analysis</b></li><li><b>Steam</b> (or warm towels) and <b>exfoliate</b></li><li><b>Extractions</b></li><li><b>Massage</b></li><li><b>Mask</b></li><li><b>Toner</b></li><li><b>Moisturizer</b> and sunscreen</li></ol>`,`Massage comes before the mask; toner comes after the mask; moisturizer is last.`,"Milady"],
+["F","Facial setup and draping",`Wash hands, disinfect the bed, lay clean linens, have the client remove jewelry and change into a gown, then use a <b>head wrap or band</b> to cover hair. Keep all products and tools within reach before starting.`,`On the practical, the head drape must stay in place the whole exam.`,"Milady / PSI"],
+["F","How is the face cleansed?",`Remove <b>eye makeup and lipstick first</b> with a dedicated remover (ask about contact lenses). Apply cleanser with <b>upward and outward</b> strokes, then remove fully with damp sponges, cotton or warm towels.`,`Never drag or pull the delicate eye area.`,"Milady / PSI"],
+["F","Cleanser types and who they suit",`<ul><li><b>Foaming / gel</b> cleansers: oily and combination skin</li><li><b>Cream / milk</b> cleansers: dry, mature, sensitive skin</li><li><b>Cleansing oil / balm</b>: dissolves makeup</li></ul>`,`Match the cleanser to skin type.`,"Milady"],
+["F","Toner vs astringent vs freshener",`All remove leftover cleanser and rebalance pH. <b>Astringent</b>: higher alcohol, for <b>oily</b> skin. <b>Freshener</b>: little or no alcohol, for <b>dry and sensitive</b> skin. <b>Toner</b>: the general term, in between.`,`Applied after the mask, before moisturizer.`,"Milady"],
+["F","Mechanical vs chemical exfoliation",`<b>Mechanical (physical)</b>: removes cells by friction, such as scrubs, brush machine, microdermabrasion, gommage. <b>Chemical</b>: dissolves the bonds between cells, such as AHAs, BHAs, enzymes.`,`Over-exfoliation causes redness and sensitivity.`,"Milady"],
+["F","Alpha hydroxy acids (AHAs) and sources",`Water-soluble acids that loosen dead cells:<ul><li><b>Glycolic</b>: sugar cane, <b>smallest molecule</b>, penetrates most</li><li><b>Lactic</b>: milk, gentler and hydrating</li><li><b>Mandelic</b>: bitter almond, large molecule, gentle</li><li>Malic (apples), tartaric (grapes), citric (citrus)</li></ul>`,`Glycolic = smallest = strongest penetration.`,"Milady"],
+["F","Beta hydroxy acid (salicylic acid)",`<b>Oil-soluble</b>, so it gets into the follicle; also anti-inflammatory. Best for <b>oily and acne-prone</b> skin.`,`Salicylic acid is related to aspirin; ask about aspirin allergy.`,"Milady"],
+["F","Enzyme exfoliants",`Dissolve keratin protein in dead cells. <b>Papain</b> (papaya), <b>bromelain</b> (pineapple), <b>pancreatin</b>. Gentle, good for sensitive skin; often activated by steam or warmth.`,`Papaya = papain; pineapple = bromelain.`,"Milady"],
+["F","What is gommage?",`A <b>roll-off</b> exfoliant cream that's applied, allowed to dry slightly, and then rubbed off, taking dead cells with it.`,`Avoid on sensitive or capillary-prone skin; the rubbing is friction.`,"Milady"],
+["F","How deep can an esthetician's exfoliation go in Texas?",`Only <b>superficial</b> exfoliation of the epidermis (mainly the stratum corneum). Any product or procedure that <b>contacts or penetrates the dermis</b> is prohibited.`,`Microdermabrasion and light peels: superficial only.`,"16 TAC §83.112(c)"],
+["F","Aftercare and cautions after exfoliation",`Skin is more <b>sun sensitive</b>: use broad-spectrum SPF, avoid tanning and heat, avoid more exfoliation for a few days.`,`Check for retinoid or Accutane use before any exfoliation.`,"Milady"],
+["F","Which medications rule out exfoliation, peels and waxing?",`<ul><li><b>Isotretinoin (Accutane)</b>: wait at least <b>6 months to 1 year</b> after stopping (follow the physician)</li><li><b>Topical retinoids</b> (Retin-A/tretinoin, Differin, retinol): thin the skin; avoid in the area</li><li>Blood thinners, steroid creams, some antibiotics: extra caution</li></ul>`,`Accutane + wax = skin lifting and tearing.`,"Milady"],
+["F","How are extractions performed safely?",`<ol><li>Wear <b>gloves</b> (Texas requirement)</li><li>Soften first with steam or desincrustation</li><li>Wrap fingertips in cotton or use a disinfected comedone extractor</li><li>Gentle pressure <b>down, under and up</b>; never use fingernails</li><li>Finish with an antiseptic toner or high-frequency</li></ol>`,`Don't extract over rosacea, couperose, or very inflamed areas.`,"Milady / §83.104"],
+["F","Clay mask",`Absorbs oil, <b>tightens</b> and draws out impurities. Best for <b>oily and acne-prone</b> skin. Can dry out dry skin.`,`Kaolin and bentonite are common clays.`,"Milady"],
+["F","Cream mask",`Rich in oils and emollients; <b>moisturizing</b>. Best for <b>dry and mature</b> skin.`,`Cream = comfort for dry skin.`,"Milady"],
+["F","Gel mask",`Lightweight and <b>hydrating and soothing</b>. Best for <b>sensitive, dehydrated</b> or reddened skin.`,`Often chilled for calming.`,"Milady"],
+["F","Alginate mask",`<b>Seaweed</b>-based powder mixed with water; sets into a <b>rubbery peel-off</b> layer. Usually applied <b>over a serum</b> to seal it in. Mix and apply quickly.`,`Peels off in one piece.`,"Milady"],
+["F","Paraffin mask",`Warm wax applied over a layer of <b>gauze</b> (eyes covered). Warms, seals in the product underneath, plumps. For <b>dry, mature</b> skin. Test temperature first.`,`Avoid on rosacea, couperose and sensitive skin; heat.`,"Milady"],
+["F","Modelage mask",`A mineral (gypsum) mask that <b>heats as it sets</b> into a hard shell, boosting circulation and product penetration. Applied over a treatment product.`,`Not for sensitive, capillary-prone, or claustrophobic clients.`,"Milady"],
+["F","How are masks applied and removed?",`Apply with a <b>brush or spatula</b> (no double-dipping), avoiding the eyes, nostrils and lips. Leave per directions (often about 10 minutes). Remove with <b>damp sponges, 4×4 pads or warm towels</b>.`,`On the practical: sanitize hands, apply mask, remove mask, toner, moisturizer.`,"Milady / PSI"],
+["F","Humectants, emollients and occlusives",`<ul><li><b>Humectants</b> draw water into the skin: glycerin, hyaluronic acid</li><li><b>Emollients</b> soften and smooth by filling gaps: plant oils, squalane</li><li><b>Occlusives</b> seal moisture in: petrolatum, dimethicone</li></ul>`,`Dehydrated → humectant. Dry → emollient.`,"Milady"],
+["F","Physical vs chemical sunscreen",`<b>Physical (mineral)</b>: <b>zinc oxide, titanium dioxide</b>; sit on skin and reflect/scatter UV; gentlest. <b>Chemical</b>: absorb UV and convert it to heat (avobenzone, octinoxate).`,`Zinc oxide also soothes; good for sensitive skin.`,"Milady"],
+["F","Serums and ampoules",`Concentrated treatment products with active ingredients. <b>Ampoules</b> are sealed single doses. Applied before moisturizer, sometimes under a mask.`,`Serum goes under the alginate mask.`,"Milady"],
+["F","Emulsions: oil-in-water vs water-in-oil",`An emulsion mixes oil and water using an <b>emulsifier</b>. <b>Oil-in-water (O/W)</b>: lighter lotions, more water. <b>Water-in-oil (W/O)</b>: heavier creams, more oil.`,`Most moisturizers are O/W.`,"Milady"],
+["F","Common acne ingredients",`<ul><li><b>Benzoyl peroxide</b>: releases oxygen, kills C. acnes</li><li><b>Salicylic acid</b>: clears the follicle</li><li><b>Sulfur</b>: drying, antibacterial</li><li>Tea tree oil: antibacterial</li></ul>`,`Benzoyl peroxide can bleach towels and clothing.`,"Milady"],
+["F","Brightening (lightening) ingredients",`Reduce melanin production, often by blocking the enzyme <b>tyrosinase</b>: <b>kojic acid</b>, <b>arbutin</b>, <b>licorice extract</b>, <b>vitamin C</b>, niacinamide, azelaic acid.`,`Lighteners don't work without daily sunscreen.`,"Milady"],
+["F","Retinol vs tretinoin",`Both are <b>vitamin A</b> derivatives that speed cell turnover. <b>Retinol</b> is cosmetic/OTC. <b>Tretinoin (Retin-A)</b> is a prescription drug. Both thin the outer layer and raise sensitivity.`,`Any retinoid in the area = no waxing there.`,"Milady"],
+["F","What does comedogenic mean?",`Likely to <b>clog pores</b> and cause comedones. Acne-prone clients should use <b>non-comedogenic</b> products.`,`Heavy oils and some esters can be comedogenic.`,"Milady"],
+["F","Benefits of facial massage",`Increases <b>circulation</b>, relaxes muscles and nerves, helps lymph flow, improves product absorption, and relaxes the client.`,`Massage helps; it doesn't remove wrinkles or burn fat.`,"Milady"],
+["F","Effleurage",`<b>Light, continuous, gliding strokes</b> with fingers or palms. Most <b>relaxing</b> movement. Used to <b>begin and end</b> a massage and to transition.`,`Required on the practical exam.`,"Milady / PSI"],
+["F","Petrissage",`<b>Kneading</b>: lifting, squeezing and pressing the tissue. Deeper and <b>stimulating</b>; increases circulation and gland activity. Done on fleshy areas like cheeks.`,`Required on the practical exam.`,"Milady / PSI"],
+["F","Friction",`<b>Deep rubbing</b> that moves layers of tissue over each other. Includes <b>chucking, rolling and wringing</b>. Boosts circulation and gland activity.`,`Circular friction on the face; chucking and wringing on arms.`,"Milady"],
+["F","Tapotement (percussion)",`Short, quick <b>tapping, slapping or hacking</b> movements. The <b>most stimulating</b> massage movement; use lightly on the face.`,`Required on the practical exam.`,"Milady / PSI"],
+["F","Vibration",`Rapid <b>shaking</b> of the hand or fingertips on the skin. Highly stimulating; use briefly.`,`Five movements: effleurage, petrissage, friction, tapotement, vibration.`,"Milady"],
+["F","Dr. Jacquet movement",`A <b>pinching/kneading</b> movement that helps move sebum out of follicles. Used for <b>oily</b> skin.`,`Dr. Jacquet = oily skin.`,"Milady"],
+["F","Massage technique rules",`Move from <b>insertion toward origin</b> of the muscle, keep a steady rhythm, use enough product to glide, and <b>never break contact</b>; when one hand lifts, the other stays on.`,`Breaking contact startles the client.`,"Milady"],
+["F","Muscle origin vs insertion",`<b>Origin</b>: the fixed, non-moving attachment. <b>Insertion</b>: the attachment that moves when the muscle contracts.`,`Massage: insertion → origin.`,"Milady"],
+["F","When should facial massage be avoided?",`Severe or inflamed acne, rosacea flares, broken or infected skin, contagious conditions, sunburn, recent surgery or injections, uncontrolled high blood pressure or heart conditions (get a doctor's OK), and fresh injuries.`,`Massaging pustules spreads bacteria.`,"Milady"],
+["F","Muscles around the eyes, mouth and forehead",`<ul><li><b>Frontalis</b>: raises eyebrows, wrinkles forehead</li><li><b>Orbicularis oculi</b>: rings the eye; closes the eyelid</li><li><b>Orbicularis oris</b>: rings the mouth; puckers lips</li><li><b>Corrugator</b>: frowns (vertical lines between brows); <b>procerus</b>: wrinkles bridge of nose</li></ul>`,`Orbicularis = ring-shaped.`,"Milady"],
+["F","Chewing and smiling muscles",`<ul><li><b>Masseter</b> and <b>temporalis</b>: chewing (mastication)</li><li><b>Zygomaticus</b> major/minor: lifts mouth corners to smile</li><li><b>Risorius</b>: pulls mouth sideways (grin)</li><li><b>Buccinator</b>: compresses cheeks (blowing, whistling)</li><li><b>Mentalis</b>: pushes up lower lip, wrinkles chin</li></ul>`,`Masseter = mastication.`,"Milady"],
+["F","Neck muscles",`<b>Platysma</b>: broad sheet from chest/shoulder to jaw; pulls mouth down. <b>Sternocleidomastoid</b>: turns and bends the head.`,`Platysma lines = neck bands.`,"Milady"],
+["F","Facial nerves to know",`<ul><li><b>5th cranial (trigeminal)</b>: largest; chief <b>sensory</b> nerve of the face; controls chewing</li><li><b>7th cranial (facial)</b>: chief <b>motor</b> nerve; facial expression</li><li><b>11th cranial (accessory)</b>: neck and shoulder muscles</li></ul>`,`5 = feel; 7 = move.`,"Milady"],
+["F","Facial bones to know",`<ul><li><b>Mandible</b>: lower jaw; largest, strongest facial bone; the only movable one</li><li><b>Maxilla</b>: upper jaw</li><li><b>Zygomatic</b>: cheekbones</li><li><b>Nasal</b>: bridge of nose</li><li><b>Lacrimal</b>: smallest, most fragile, inner eye wall</li><li><b>Hyoid</b>: U-shaped bone in the throat</li></ul>`,`8 cranial bones, 14 facial bones.`,"Milady"],
+["F","Blood supply to the face",`The <b>common carotid</b> artery splits into the <b>internal carotid</b> (brain, eyes) and <b>external carotid</b> (face, scalp, neck). The <b>jugular veins</b> return blood.`,`External carotid = face.`,"Milady"],
+["F","Lymph and lymphatic drainage",`Lymph carries waste away from tissue to lymph nodes. <b>Manual lymphatic drainage</b> uses very light, rhythmic strokes toward the nodes to reduce puffiness.`,`Very light pressure; it works on the surface lymph vessels.`,"Milady"],
+["F","Brush machine (rotary brush)",`Rotating brushes for <b>cleansing and light exfoliation</b>. Keep the brush <b>moist</b>, moving, and flat or perpendicular with light pressure; soft brushes for sensitive skin. Clean and disinfect brushes after each client.`,`Not on rosacea, couperose or inflamed acne.`,"Milady"],
+["F","Galvanic current basics",`A constant <b>direct current (DC)</b> that produces <b>chemical</b> changes. Two poles: <b>positive (+) anode, red</b> and <b>negative (−) cathode, black</b>. Two uses: desincrustation and iontophoresis.`,`Galvanic = DC = chemical.`,"Milady"],
+["F","Desincrustation",`Galvanic treatment using the <b>negative pole</b> with an <b>alkaline</b> solution. It <b>softens and saponifies</b> (turns into soap) sebum and debris so comedones are easier to extract. For oily, congested skin.`,`Desincrustation = negative = alkaline.`,"Milady"],
+["F","Iontophoresis",`Using galvanic current to push <b>water-soluble products</b> into the skin. The pole matches the product's charge, because <b>like charges repel</b> (a positive product is pushed by the positive pole).`,`Ionto = infuse.`,"Milady"],
+["F","Effects of the positive galvanic pole",`<b>Acidic</b> reaction · <b>closes</b> pores (tightens) · <b>soothes</b> nerves · <b>decreases</b> blood flow · <b>firms</b> tissue.`,`Positive calms and firms.`,"Milady"],
+["F","Effects of the negative galvanic pole",`<b>Alkaline</b> reaction · <b>opens</b> (softens) pores · <b>stimulates</b> nerves · <b>increases</b> blood flow · <b>softens</b> tissue.`,`Negative = the opposite of positive on every point.`,"Milady"],
+["F","Galvanic contraindications and safety",`Do not use with <b>pacemakers, metal implants or plates</b>, braces, <b>pregnancy</b>, <b>epilepsy</b>, heart conditions, broken capillaries, or open skin. Remove all jewelry. A metallic taste can happen.`,`Ask about metal anywhere in the body.`,"Milady"],
+["F","High-frequency (Tesla) current",`A rapidly <b>alternating current</b> producing a <b>thermal</b> (heating) effect, delivered through <b>glass electrodes</b> filled with gas: <b>neon</b> glows orange-red, <b>argon</b> glows violet-blue. Effects: <b>germicidal</b>, stimulates circulation, boosts gland activity, helps product absorption.`,`Texas lists the high-frequency machine for disinfection, product penetration and stimulation.`,"Milady / §83.72"],
+["F","High-frequency: direct vs indirect method",`<b>Direct</b>: esthetician glides the electrode over the client's skin (often over gauze); germicidal and drying; good after extractions on oily/acne skin. <b>Indirect</b>: <b>client holds</b> the electrode while the esthetician massages the face with her fingers; stimulating for dry skin.`,`Indirect: touch the face before turning it on; turn it off before lifting your hands.`,"Milady"],
+["F","High-frequency sparking and safety",`<b>Sparking</b>: lifting the electrode slightly off the skin to create tiny sparks; germicidal on pustules. Safety: put the electrode on the skin before turning the machine on, turn it off before removing, and <b>never use over alcohol-based products</b> (fire risk).`,`Alcohol + sparks = burns.`,"Milady"],
+["F","Facial steamer: use",`Use <b>distilled water</b> only (tap minerals clog it). Turn it on and <b>wait until steam flows</b> before aiming it at the client. Position about <b>15–18 inches</b> away, farther for sensitive skin, typically 5–10 minutes. Ozone setting adds a germicidal effect.`,`Never point sputtering steam at the face.`,"Milady"],
+["F","Facial steamer: care and cautions",`Clean regularly to remove mineral buildup (white vinegar solution per manufacturer). Use short or no steam for <b>rosacea, couperose, sensitive skin</b> and clients who don't tolerate heat.`,`On the practical, steaming is done with a <b>warm towel</b> draped to cover the face.`,"Milady / PSI"],
+["F","Vacuum (suction) machine",`Gently suctions to <b>loosen debris and stimulate circulation</b>. Keep the glass tip <b>moving</b>; use light suction; release suction before lifting. Change filters and disinfect tips.`,`Never use on couperose, rosacea, thin or sensitive skin.`,"Milady"],
+["F","Magnifying lamp",`Magnifies the skin for analysis and extractions, measured in <b>diopters</b> (commonly 3–5). <b>Cover the client's eyes</b> with pads while using it.`,`Keep it covered when not in use; sunlight through the lens can start a fire.`,"Milady"],
+["F","Hot towel cabinet",`Keeps towels warm for facials. Use clean towels each client, <b>test the towel temperature on your inner wrist</b> before placing on the face, and clean and disinfect the cabinet daily.`,`A damp warm cabinet grows bacteria if not cleaned.`,"Milady"],
+["F","Electrical safety in the treatment room",`Use UL-listed equipment, <b>grounded (3-prong) plugs</b>, GFCI outlets near water; never touch equipment with <b>wet hands</b>; don't overload outlets; inspect cords; unplug by the plug, not the cord.`,`Water + electricity questions: the safest answer wins.`,"Milady"],
+["F","AC vs DC and electrical terms",`<b>Direct current (DC)</b>: flows one direction (galvanic, batteries). <b>Alternating current (AC)</b>: changes direction (wall outlets, high-frequency). <b>Volt</b> = pressure, <b>amp</b> = strength, <b>milliamp</b> = 1/1000 amp, <b>ohm</b> = resistance, <b>watt</b> = power used.`,`A rectifier converts AC to DC.`,"Milady"],
+["F","Microcurrent and LED light therapy",`<b>Microcurrent</b>: very low-level current that tones facial muscles. <b>LED</b> colors: <b>red</b> = collagen, anti-aging; <b>blue</b> = kills acne bacteria; <b>yellow</b> = reduces redness and swelling; <b>green</b> = pigmentation.`,`Blue = blemishes.`,"Milady"],
+["F","General contraindications for facial machines",`Pacemaker, metal implants or plates, pregnancy, epilepsy or seizure disorders, heart conditions, high blood pressure, braces, open lesions, and client fear of the current. When in doubt, get a physician's release.`,`Metal and electricity don't mix.`,"Milady"],
+["F","General contraindications for facials",`Contagious skin conditions, open or inflamed skin, sunburn, recent surgery, laser or deep peels, Accutane or retinoids, uncontrolled diabetes, autoimmune conditions (lupus), severe allergies to products, and cold sores in the area.`,`Never diagnose. Say "please check with your doctor" and refer.`,"Milady"],
+
+// ───────── HAIR REMOVAL
+["H","Three stages of hair growth",`<ol><li><b>Anagen</b>: active growth</li><li><b>Catagen</b>: short transition; follicle shrinks</li><li><b>Telogen</b>: resting, then shedding</li></ol>`,`Mnemonic: Active, Change, Takeoff (resting).`,"Milady"],
+["H","Which growth phase is best for hair removal?",`<b>Anagen</b>. The hair is attached to the papilla, so removal is most effective and longer-lasting. Permanent methods depend on hitting hair in anagen.`,`Why clients need repeat waxing: hairs are in different phases.`,"Milady"],
+["H","Lanugo, vellus and terminal hair",`<b>Lanugo</b>: fine hair on a fetus or newborn. <b>Vellus</b>: soft, short, unpigmented "peach fuzz". <b>Terminal</b>: longer, coarser, pigmented hair (brows, underarms, legs).`,`Vellus = velvet-fine.`,"Milady"],
+["H","Hirsutism vs hypertrichosis",`<b>Hirsutism</b>: excess coarse hair in a <b>male pattern</b> on women (chin, upper lip), often hormonal. <b>Hypertrichosis</b>: excess hair <b>anywhere</b> that normally has only vellus hair.`,`Hirsutism can signal a medical issue; suggest a physician.`,"Milady"],
+["H","Parts of the hair and follicle",`<b>Shaft</b> (above skin), <b>root</b> (below), <b>follicle</b> (tube), <b>bulb</b> (base), <b>dermal papilla</b> (feeds the hair), <b>arrector pili</b> muscle (goosebumps), <b>sebaceous gland</b> (oils the hair).`,`Destroying the papilla is what makes removal permanent.`,"Milady"],
+["H","Depilatory vs epilator",`<b>Depilatory</b>: removes hair at or just above the skin, usually a <b>chemical</b> cream that dissolves keratin (often thioglycolate, high pH). <b>Epilator</b>: removes hair <b>from the follicle</b>: waxing, sugaring, tweezing, threading.`,`Depilatory = dissolve; epilator = extract.`,"Milady"],
+["H","Using a depilatory safely",`Do a <b>patch test</b> first, follow timing exactly (often 5–10 minutes), don't use on broken or irritated skin, remove completely and rinse well.`,`Highly alkaline, so it can burn if left on too long.`,"Milady"],
+["H","Which hair removal method is permanent?",`<b>Electrolysis</b> (galvanic, thermolysis, or blend) is the only method recognized as <b>permanent</b> by the FDA. Laser and IPL give <b>permanent reduction</b>. Neither is part of the esthetician license.`,`Waxing, sugaring, threading, tweezing, shaving and depilatories are all temporary.`,"Milady"],
+["H","Soft (strip) wax technique",`<ol><li>Cleanse and dry the area; apply pre-wax antiseptic</li><li>Test the wax temperature</li><li>Apply a <b>thin layer in the direction of hair growth</b></li><li>Press a fabric strip on, rubbing with growth</li><li>Hold skin <b>taut</b>; pull the strip off quickly <b>against growth</b>, <b>parallel to the skin</b></li><li>Press the area right away to calm it</li></ol>`,`Pulling up (away from the skin) bruises and lifts skin.`,"Milady"],
+["H","Hard wax technique",`Applied <b>thicker</b> in the direction of growth, with a lip at the edge to grip. It hardens and is removed <b>against growth</b> without strips. Grips hair more than skin, so it's gentler for <b>sensitive areas</b> (face, underarms, bikini) and coarse hair.`,`Hard wax = no strip.`,"Milady"],
+["H","How is wax temperature tested?",`On the <b>inside of the practitioner's wrist</b> first, then a small test patch on the client's area.`,`Wax too hot burns; too cool drags and pulls skin.`,"Milady"],
+["H","How long should hair be for waxing?",`About <b>¼ to ½ inch</b>. Too short won't grip; too long should be trimmed first. Sugaring can work on hair about ⅛ inch.`,`¼ inch = about 2 weeks of growth for most clients.`,"Milady"],
+["H","Texas wax pot and applicator rules",`<ul><li>Wax pots cleaned and disinfected per <b>manufacturer</b></li><li><b>No applicator left standing</b> in the wax</li><li>Wax is <b>never reused</b>, under any circumstances</li><li>No double-dipping; use a new applicator each dip</li><li>Discard all products and single-use items that touched skin</li></ul>`,`One dip, one stick, toss it.`,"16 TAC §83.104–83.105"],
+["H","Contraindications for waxing",`<ul><li><b>Accutane</b> (wait 6 months to 1 year)</li><li><b>Retinoids</b> in the area (Retin-A, Differin)</li><li>Recent peels, microdermabrasion or laser</li><li>Sunburn, rashes, broken or irritated skin</li><li>Active <b>cold sores</b>, warts, moles</li><li><b>Varicose veins</b></li><li>Blood thinners, steroids, diabetes (physician OK)</li></ul>`,`Accutane and retinoids are the most-tested answers.`,"Milady"],
+["H","Waxing aftercare for clients",`For <b>24–48 hours</b> avoid sun, tanning, saunas, hot tubs, heavy exercise, exfoliation, and fragranced products. Begin gentle exfoliation after that to prevent ingrown hairs.`,`Heat and friction on fresh-waxed skin cause bumps.`,"Milady"],
+["H","Pre-wax and post-wax products",`<b>Before</b>: cleanse and dry (light powder optional for soft wax, or a pre-wax oil for hard wax per manufacturer). <b>After</b>: remove residue with an oil-based remover, then apply a <b>soothing or antiseptic</b> lotion.`,`The practical ends the wax section with "apply post-wax product".`,"Milady / PSI"],
+["H","What causes skin lifting (tearing) during waxing?",`Retinoid or Accutane use, wax that's too hot, waxing the same spot repeatedly, skin not held taut, or pulling up instead of parallel.`,`Avoid going over the same area more than twice.`,"Milady"],
+["H","Sugaring",`A paste of <b>sugar, lemon juice and water</b>. Typically applied <b>against growth</b> and flicked off <b>with growth</b> by hand. Water-soluble cleanup and often less irritating.`,`Opposite direction from waxing.`,"Milady"],
+["H","Threading",`A twisted <b>cotton thread</b> rolled over the skin traps and lifts rows of hair from the follicle. Common for brows and face. In Texas, the thread is a <b>single-use item</b>.`,`New thread every client.`,"Milady / §83.104"],
+["H","Tweezing technique",`Clean and disinfect tweezers; hold skin taut; grip each hair close to the skin; pull quickly <b>in the direction of growth</b>. Work from underneath the brow.`,`Disinfect tweezers after every client.`,"Milady / §83.104"],
+["H","Eyebrow shaping guidelines",`<ul><li><b>Start</b>: in line with the side of the nose / inner eye corner</li><li><b>Arch</b> (highest point): in line with the outer edge of the iris</li><li><b>End</b>: on a line from the nostril to the outer corner of the eye</li></ul>`,`Remove strays underneath; avoid over-thinning the top line.`,"Milady"],
+["H","Ingrown hairs (pseudofolliculitis)",`Hair curls back into the skin, causing red bumps. More common with curly hair and after shaving. Prevent with gentle exfoliation starting 48 hours after waxing.`,`An infected ingrown with pus is not waxed over.`,"Milady"],
+];
+
+const CARDS = RAW.map((r,i)=>({id:i,c:r[0],q:r[1],a:r[2],t:r[3],s:r[4]}));
+
+// [category, question, correct answer, [wrong answers], explanation]
+const QRAW = [
+// ── LICENSING & REGULATION
+["L","What is the minimum age to receive a Texas esthetician license?","17","16|18|21","Texas requires applicants to be at least 17."],
+["L","How many hours of instruction are required for a Texas esthetician license?","750","600|1,000|320","750 hours: 450 theory and related practice plus 300 specialty practice."],
+["L","How many of the 750 esthetician hours may be completed through distance education?","Up to 375 hours of theory","None; all hours must be in person|Up to 750 hours|Up to 375 hours of practical work","Distance education is capped at 375 hours and is limited to theory."],
+["L","How many hours are required for the Texas eyelash extension specialty license?","320","300|600|750","The eyelash extension specialist curriculum is 320 hours."],
+["L","How many continuing education hours must an esthetician complete to renew?","4","2|6|8","At least 4 hours of TDLR-approved CE per renewal."],
+["L","Which CE topics are required for every renewal (on or after Sept. 1, 2025)?","1 hour of sanitation and 1 hour of human trafficking prevention","2 hours of first aid|4 hours of sanitation only|1 hour of business management","1 hour sanitation + 1 hour human trafficking prevention; the remaining hours can be any approved topic."],
+["L","A licensee who has held a license for at least 15 years must complete which CE to renew?","1 hour of sanitation and 1 hour of human trafficking prevention","No CE at all|The full 4 hours|2 hours of sanitation","Licensees of 15+ years complete only the sanitation and human trafficking hours."],
+["L","How long must a licensee keep a CE certificate of completion?","2 years","6 months|1 year|5 years","Keep it for 2 years after completing the course; TDLR may check during an inspection."],
+["L","CE hours must be completed within what period?","The 2 years before the renewal date","Any time since licensure|The 6 months before renewal|Within 30 days after renewal","CE must fall within the two-year period immediately preceding renewal."],
+["L","How often does a Texas esthetician license need to be renewed?","Every 2 years","Every year|Every 3 years|Every 4 years","Practitioner licenses renew every two years."],
+["L","Within how many days must a practitioner notify TDLR of a name change?","30 days","10 days|60 days|90 days","Name changes must be reported in writing within 30 days."],
+["L","Within how many days must a practitioner notify TDLR of an address change?","30 days","10 days|60 days|There is no requirement","Address changes must be reported within 30 days; TDLR mails notices to the last known address."],
+["L","Where must a practitioner's current license be displayed?","Near the work station in public view, or available at the reception desk","In the break room|In the owner's office only|It only needs to be carried in a wallet","Either posted near the station in public view or kept at the reception desk."],
+["L","What size photo must be attached to the license?","At least 1½ inches by 1½ inches","1 inch by 1 inch|2 inches by 3 inches|No photo is required","A current photo at least 1½ × 1½ inches, not covering any information."],
+["L","When may an esthetician perform a service outside a licensed facility?","When the client is ill or incapacitated and the appointment is made through a licensed facility","Whenever the client prefers home service|Whenever the esthetician books it directly by text|Never, under any circumstances","Allowed for illness/incapacity or a special event, with the appointment made through a licensed facility."],
+["L","Which item is prohibited in a Texas licensed establishment?","Methyl methacrylate (MMA) liquid monomer","EPA-registered disinfectant|Powdered alum|Liquid bandage","MMA, credo blades, stick/lump alum and formalin fumigants are prohibited."],
+["L","In which form is alum allowed in Texas?","Powder or liquid","Stick|Lump|Block","Only stick and lump alum are prohibited."],
+["L","A credo blade is found in a drawer at a licensed salon but was never used. This is:","A violation, because possession is prohibited","Allowed if it is unused|Allowed if locked away|Allowed for pedicures only","Possessing a prohibited item on licensed premises is itself a violation."],
+["L","Texas rules prohibit any product or procedure that comes into contact with or penetrates the:","Dermis","Stratum corneum|Epidermis|Hair shaft","Estheticians work only at the surface; reaching the dermis is prohibited."],
+["L","An esthetician's license expired last week. She may:","Not perform any services until the license is renewed","Keep working during a 30-day grace period|Keep working but pay a late fee|Work only under another licensee's supervision","A late renewal creates an unlicensed period with no services allowed."],
+["L","A licensee never received a renewal notice from TDLR. What applies?","She is still responsible for renewing on time","TDLR automatically extends the license|She is exempt from late fees|She gets a 90-day extension","Non-receipt of a renewal notice does not exempt anyone from the requirements."],
+["L","Which animals are allowed in a licensed establishment?","Service animals only","Small dogs in carriers|Vaccinated cats|Any pet if clients agree","Only service animals are allowed; covered aquariums are permitted."],
+["L","Which is true about food in a licensed establishment?","Pre-packaged food or drinks may be sold or consumed; food may not be prepared for sale","Any food may be prepared if there is a kitchen|No food or drink is ever allowed|Food may be prepared at the facial station","Food may not be prepared for sale; pre-packaged items are fine."],
+["L","May chemical supplies be stored in the establishment's restroom?","No","Yes, if locked|Yes, if labeled|Yes, in small amounts","Chemical supplies may not be stored in the restroom."],
+["L","Floors in areas where services are performed must be:","Non-porous and easily washable","Carpeted for client comfort|Covered with area rugs|Any material the owner chooses","Service areas need non-porous, washable floors; carpet is allowed only in other areas."],
+["L","A licensed establishment attached to a residence must have:","A separate entrance from the residence, with any connecting door closed during business hours","A shared kitchen|The same front door as the home|No special requirement","The facility needs its own entrance; living or sleeping on premises is not allowed."],
+["L","Who is responsible for following health and safety rules at an esthetician's station?","The esthetician (practitioner)","Only the salon owner|Only the TDLR inspector|Only the manager","Each practitioner is responsible for compliance with the health and safety standards."],
+["L","Which agency registers disinfectants?","EPA","FDA|OSHA|TDLR","Disinfectants carry an EPA registration number."],
+["L","Which agency requires Safety Data Sheets for products in the workplace?","OSHA","EPA|FDA|CDC","OSHA's Hazard Communication Standard requires SDS."],
+["L","Which agency regulates cosmetics?","FDA","EPA|OSHA|TDLR","The FDA regulates cosmetics and drugs."],
+["L","Which service is within the scope of a Texas esthetician license?","Applying semi-permanent eyelash extensions","Cutting hair|Applying artificial nails|Performing electrolysis","Lash extensions are part of the esthetician curriculum; hair, nails and electrolysis are not."],
+["L","What must practitioners wear while performing services?","Clean top and bottom outer garments and footwear","Any clothing, including lingerie|A specific uniform color|Scrubs only","Clean outer garments (top and bottom) and footwear are required."],
+
+// ── INFECTION CONTROL
+["I","Which is the correct order of decontamination?","Clean, then disinfect","Disinfect, then clean|Sterilize, then clean|Rinse in water only","Cleaning removes debris so the disinfectant can work."],
+["I","Why must implements be cleaned before they are disinfected?","Debris makes the disinfectant ineffective","Cleaning sterilizes the tool|Dry tools absorb more disinfectant|Inspectors check for odor","Texas rules state disinfectants are inactivated by visible debris."],
+["I","Texas requires disinfectants to be EPA-registered and:","Bactericidal, fungicidal and virucidal","Bactericidal only|Fungicidal only|Labeled as antiseptic","They must kill bacteria, fungi and viruses."],
+["I","Blood is found on a facial bed. Which product must be used?","An EPA-registered hospital-grade or tuberculocidal disinfectant, or a bleach solution","An antiseptic|Plain soap and water|A dry paper towel","Blood and body fluids require hospital-grade, tuberculocidal or bleach."],
+["I","How often must an immersion disinfectant solution be changed?","Daily, or sooner if diluted or soiled","Weekly|Monthly|Only when it smells","Prepare it fresh daily or whenever it becomes diluted or soiled."],
+["I","TDLR recommends leaving tools in bleach solution for how long in routine disinfection?","2 minutes","10 minutes|30 minutes|Overnight","2 minutes routine; 5 minutes for blood contamination."],
+["I","A non-porous tool contacted blood. How long should it be fully immersed in bleach solution?","5 minutes","30 seconds|1 minute|20 minutes","Total immersion in a blood and body fluid bleach solution for 5 minutes."],
+["I","How must chlorine bleach solution be stored?","In a closed, covered container away from sunlight and other chemicals","In an open container for ventilation|In a sunny window|Next to the alcohol","Closed, covered, out of sunlight, away from other chemicals and flame."],
+["I","An ultraviolet (UV) sanitizer may be used to:","Store clean, disinfected implements","Sterilize implements|Disinfect implements in 5 minutes|Replace liquid disinfection","UV sanitizers are only a dry storage container."],
+["I","How often must the facial bed and headrest be cleaned and disinfected?","After every client","Once a day|Once a week|Only when visibly soiled","Facial beds and headrests are disinfected after each client."],
+["I","What must be done with a metal comedone extractor after a client?","Clean and disinfect it","Throw it away|Rinse it in water|Disinfect it at the end of the day","Multi-use metal tools are cleaned and disinfected after each client."],
+["I","Which of these is a single-use item?","Wooden applicator","Metal tweezers|Comedone extractor|Glass high-frequency electrode","Wooden applicators are porous and must be thrown away after use."],
+["I","What must be done with a lancet after use?","Discard it","Disinfect and reuse it|Store it in a UV sanitizer|Rinse and dry it","Lancets are on Texas's single-use list."],
+["I","Which is an approved way to avoid contaminating a jar of product?","Using a single-use applicator and throwing it away","Re-dipping a spatula wiped on a towel|Re-dipping with gloved fingers|Rinsing the spatula in water between dips","Approved: dispose of leftover product, use a single-use applicator, or use an applicator bottle."],
+["I","Texas requires gloves during which service?","Extractions","Consultation|Skin analysis|Applying moisturizer","Gloves must be worn during any type of extraction."],
+["I","Texas requires towels to be washed in:","Hot water and chlorine bleach","Cold water only|Fabric softener only|Any detergent at any temperature","Towels must be laundered in hot water and chlorine bleach."],
+["I","How often must trash containers be emptied?","Daily","Weekly|When full|Twice a week","Trash containers must be emptied daily."],
+["I","A client has minor bleeding. What may be used to stop it?","Styptic powder applied with a disposable cotton-tipped applicator","An alum stick|A gloved fingertip pressing the wound|A reusable sponge","Powdered alum, styptic powder or liquid bandage, applied with a disposable applicator."],
+["I","A cotton pad comes in contact with blood. You should:","Double-bag it and discard it in a closed trash container","Disinfect and reuse it|Rinse and dry it|Set it aside for later","Porous items touched by blood are double-bagged and discarded."],
+["I","What is the first step when a client is cut during a service?","Stop the service","Finish the service, then clean up|Call TDLR|Apply styptic and keep going","Stop, glove up, clean, protect the wound, then disinfect."],
+["I","Standard Precautions mean:","Treating all blood and body fluids as potentially infectious","Treating only visibly ill clients as infectious|Only protecting against HIV|Wearing gloves only for pedicures","Assume every client could carry a bloodborne pathogen."],
+["I","Which bloodborne pathogen survives longer on surfaces?","Hepatitis B","HIV|Common cold virus|Ringworm","Hepatitis B is more resilient than HIV."],
+["I","How many sections does a Safety Data Sheet (SDS) have?","16","8|10|12","SDS follow a standard 16-section format."],
+["I","An antiseptic is intended for use on:","Skin","Implements|Floors|Facial beds","Antiseptics are for skin; disinfectants are for tools and surfaces."],
+["I","Most bacteria are:","Nonpathogenic (harmless)","Pathogenic|Viruses|Parasites","About 70% of bacteria are nonpathogenic."],
+["I","Staphylococci grow in:","Clusters, and cause boils and pustules","Chains|Pairs|Spirals","Staph grow in grape-like clusters."],
+["I","Streptococci grow in:","Chains","Clusters|Pairs|Spirals","Strep grow in chains and cause strep throat and blood poisoning."],
+["I","Bacilli are shaped like:","Rods","Spheres|Spirals|Stars","Bacilli are rod-shaped and the most common bacteria."],
+["I","Syphilis is caused by which type of bacteria?","Spirilla","Staphylococci|Streptococci|Diplococci","Spirilla are spiral-shaped; they cause syphilis and Lyme disease."],
+["I","Antibiotics are NOT effective against:","Viruses","Staphylococci|Streptococci|Bacilli","Viruses do not respond to antibiotics."],
+["I","Ringworm (tinea) is caused by a:","Fungus","Worm|Virus|Bacterium","Despite the name, ringworm is a fungal infection."],
+["I","A client has head lice. You should:","Decline the service","Proceed and disinfect afterward|Proceed with gloves|Proceed with a head wrap","Texas rules list lice and nits as contagious conditions; do not service."],
+["I","How is a patch test done?","Apply a small amount behind the ear or inside the elbow 24–48 hours before the service","Apply it to the face 5 minutes before the service|Apply it to the palm one week before|Apply it to the lips immediately before","Test on a discreet area 24–48 hours ahead."],
+["I","A client's patch test shows redness and swelling. You should:","Not perform the service","Use less product|Proceed with gloves|Double the processing time","A positive reaction means the client may be allergic."],
+["I","Which disinfectant can damage plastic and rubber?","Phenolic","Quaternary ammonium compound|Antiseptic|Liquid soap","Phenolics are effective but can soften plastic and rubber and irritate skin."],
+["I","Contact time on a disinfectant label means:","How long the surface must stay wet to kill the listed germs","How long it takes to dry|Time between clients|How long the bottle lasts once opened","If the surface dries before contact time, reapply."],
+["I","When mixing a disinfectant, you should:","Follow the label dilution and add disinfectant to water","Mix it with bleach for extra strength|Double the concentrate|Mix with hot water in an open bowl","Never mix chemicals; follow the manufacturer's dilution."],
+["I","A raised lesion containing pus is a:","Pustule","Macule|Fissure|Wheal","Pustules contain pus."],
+["I","A flat spot of color change on the skin, such as a freckle, is a:","Macule","Papule|Pustule|Vesicle","Macules are flat."],
+["I","A small blister filled with clear fluid is a:","Vesicle","Bulla|Tumor|Scale","A large blister is a bulla."],
+["I","An itchy, swollen lesion such as hives or a mosquito bite is a:","Wheal","Macule|Fissure|Keloid","Wheals come and go."],
+["I","A crack in the skin, such as chapped lips, is a:","Fissure","Vesicle|Macule|Papule","Fissures are cracks."],
+["I","A thick, raised scar caused by excess collagen is a:","Keloid","Macule|Comedo|Skin tag","Keloids are more common in darker skin types."],
+["I","A closed comedo is also called a:","Whitehead","Blackhead|Pustule|Macule","Closed comedones have no opening to the surface."],
+["I","Why does an open comedo (blackhead) look dark?","Sebum oxidizes when exposed to air","It is filled with dirt|It contains dried blood|It is a mold growth","Blackheads are dark from oxidation, not dirt."],
+["I","Small white keratin-filled cysts with no opening, often around the eyes, are:","Milia","Open comedones|Warts|Pustules","Milia have no follicle opening."],
+["I","The bacteria involved in acne (C. acnes) are:","Anaerobic, so they cannot survive with oxygen","Aerobic and need oxygen|A virus|A fungus","Benzoyl peroxide works by delivering oxygen into the follicle."],
+["I","For a client with rosacea you should avoid:","Steam and heat","Gentle cleansers|Cool compresses|Mineral sunscreen","Heat, steam and stimulating treatments trigger rosacea flares."],
+["I","Telangiectasia refers to:","Dilated, visible capillaries","Dark brown spots|Ingrown hairs|Excessive sweating","Also called couperose; avoid heat and suction over them."],
+["I","Red patches covered with silvery-white scales describe:","Psoriasis","Eczema|Impetigo|Milia","Psoriasis is not contagious."],
+["I","Herpes simplex (cold sores) is:","A contagious virus that waxing and heat can trigger","A bacterial infection|A fungal infection|A noncontagious allergy","Never service over an active cold sore."],
+["I","A contagious bacterial infection with honey-colored crusts is:","Impetigo","Psoriasis|Melasma|Vitiligo","Impetigo is common in children; do not service."],
+["I","Hormonal patches of hyperpigmentation, often during pregnancy, are called:","Melasma","Vitiligo|Leukoderma|Albinism","Melasma is known as the mask of pregnancy."],
+["I","Vitiligo is:","Loss of pigment causing white patches","Excess pigment|A contagious fungus|Dilated capillaries","Vitiligo areas need sun protection."],
+["I","A verruca is:","A wart, which is viral and contagious","A callus|A mole|A freckle","Warts can spread; don't treat them."],
+["I","Foul-smelling perspiration is called:","Bromhidrosis","Anhidrosis|Hyperhidrosis|Miliaria rubra","Brom = odor."],
+["I","Lack of perspiration is called:","Anhidrosis","Bromhidrosis|Hyperhidrosis|Seborrhea","An = without."],
+["I","The most common and least severe type of skin cancer is:","Basal cell carcinoma","Malignant melanoma|Squamous cell carcinoma|Keratoma","Basal cell often looks like a pearly nodule."],
+["I","The most dangerous type of skin cancer is:","Malignant melanoma","Basal cell carcinoma|Squamous cell carcinoma|Milia","Use ABCDE to spot warning signs; refer to a dermatologist."],
+["I","In the ABCDEs of melanoma, D stands for:","Diameter larger than a pencil eraser","Dryness|Darkness only|Duration of a year","Asymmetry, Border, Color, Diameter, Evolving."],
+
+// ── SKIN CARE
+["K","Which is the outermost layer of the epidermis?","Stratum corneum","Stratum basale|Stratum granulosum|Reticular layer","The corneum is made of dead keratinized cells that shed."],
+["K","Which epidermal layer is found mainly on the palms and soles?","Stratum lucidum","Stratum spinosum|Stratum basale|Papillary layer","Lucidum is the clear layer of thick skin."],
+["K","In which layer do cells divide by mitosis and melanocytes reside?","Stratum basale","Stratum corneum|Stratum lucidum|Subcutaneous layer","The basal layer produces new cells."],
+["K","Langerhans immune cells are found in the:","Stratum spinosum","Stratum corneum|Stratum lucidum|Subcutaneous layer","The spiny layer contains Langerhans cells."],
+["K","Collagen and elastin are found mainly in the:","Reticular layer of the dermis","Stratum corneum|Stratum lucidum|Subcutaneous layer","The reticular layer holds the dermis's fibers, glands and follicles."],
+["K","Which cells produce collagen and elastin?","Fibroblasts","Melanocytes|Langerhans cells|Keratinocytes","Fibroblasts live in the dermis."],
+["K","The subcutaneous layer is made mostly of:","Adipose (fat) tissue","Dead keratinized cells|Melanin|Sweat glands only","It cushions, insulates and stores energy."],
+["K","Where is the skin thinnest?","Eyelids","Palms|Soles of the feet|Back","Use the lightest touch around the eyes."],
+["K","Normal skin pH is about:","4.5 to 5.5","7.0|8.5 to 9.0|2.0 to 3.0","The acid mantle is slightly acidic."],
+["K","A pH of 7 is:","Neutral","Acidic|Alkaline|Strongly acidic","Below 7 is acidic; above 7 is alkaline."],
+["K","Compared with a pH of 6, a pH of 5 is:","10 times more acidic","2 times more acidic|The same|100 times more acidic","Each step on the pH scale is a factor of 10."],
+["K","About how long is the adult skin cell turnover cycle?","28 days","7 days|90 days|1 year","Turnover slows with age."],
+["K","Which glands produce sebum?","Sebaceous glands","Eccrine glands|Apocrine glands|Sudoriferous glands","Sebaceous glands attach to hair follicles."],
+["K","Apocrine sweat glands are found mainly in the:","Underarms and genital area","Palms|Forehead|Entire body evenly","Apocrine secretion causes odor when bacteria break it down."],
+["K","Which is NOT a function of the skin?","Producing insulin","Protection|Heat regulation|Absorption","Functions: sensation, heat regulation, absorption, protection, excretion, secretion."],
+["K","Skin type is determined mainly by:","Genetics and the amount of oil produced","The season|Makeup use|The client's age only","Type is genetic; conditions such as dehydration can change."],
+["K","Dehydrated skin lacks:","Water","Oil|Melanin|Collagen","Even oily skin can be dehydrated."],
+["K","Alipidic skin lacks:","Oil","Water|Pigment|Elastin","Alipidic is dry skin, a skin type."],
+["K","The Fitzpatrick scale measures:","The skin's reaction to sun exposure (Types I–VI)","Wrinkle depth|Oil production|Acne severity","Type I always burns; Type VI rarely burns."],
+["K","The Glogau scale classifies:","Photoaging and wrinkles","Skin color|Acne grades|Hair growth phases","Glogau runs from Type I (no wrinkles) to IV (only wrinkles)."],
+["K","Under a Wood's lamp, hyperpigmentation appears:","Brown","Blue-white|Yellow-orange|Light violet","Brown indicates pigment or sun damage."],
+["K","Under a Wood's lamp, oily areas and comedones appear:","Yellow-orange or pink","Brown|Blue-white|Purple","Orange-yellow signals oil and bacteria."],
+["K","How should a Wood's lamp be used?","In a darkened room with the client's eyes covered","In a brightly lit room|With the client's eyes open|On skin covered in makeup","It is a filtered UV light; protect the eyes."],
+["K","When is a skin analysis performed?","After the skin has been cleansed","Before removing makeup|After the mask|At the very end of the facial","Makeup and debris hide the skin's true condition."],
+["K","UVA rays:","Penetrate deeper and cause aging","Cause sunburn only|Are measured by SPF|Cannot pass through glass","UVA = aging; UVB = burning."],
+["K","SPF measures protection against:","UVB rays","UVA rays|Infrared rays|Blue light","Broad-spectrum sunscreen covers both UVA and UVB."],
+["K","The biggest external cause of skin aging is:","Sun exposure","Genetics|Sleeping position|Drinking water","Sun is the leading extrinsic aging factor."],
+["K","Which are antioxidants?","Vitamins C and E","Alcohol and fragrance|Sodium lauryl sulfate|Mineral oil","Antioxidants neutralize free radicals."],
+["K","Which statement about pores is true?","Pores do not open and close; heat softens sebum","Steam opens pores|Cold water closes pores permanently|Pores have small muscles","Pores have no muscles."],
+["K","A contraindication is:","A condition or factor that means a service should not be performed","A product ingredient list|A type of massage movement|A consent signature","Contraindications are found through the intake form and consultation."],
+["K","Which belongs on a client intake form?","Medications, allergies and medical conditions","The client's income|The client's religion|Favorite colors","Update the intake form at every visit."],
+
+// ── FACIAL TREATMENTS
+["F","In a basic facial, which step comes right after massage?","Mask","Toner|Cleansing|Steam","Order: cleanse, analyze, steam/exfoliate, extract, massage, mask, toner, moisturizer."],
+["F","What is the last step of a basic facial?","Moisturizer and sunscreen","Mask|Toner|Extractions","Moisturizer (and SPF for daytime) finishes the facial."],
+["F","What should be removed first, before the full cleanse?","Eye makeup and lipstick","The head wrap|The client's gown|Moisturizer","Remove eye and lip makeup with a dedicated remover first."],
+["F","Cleansing strokes on the face should move:","Upward and outward","Downward and inward|Only side to side|In random directions","Upward and outward strokes avoid pulling the skin down."],
+["F","An astringent is best suited for:","Oily skin","Dry skin|Sensitive skin|Mature dry skin","Astringents contain more alcohol."],
+["F","A freshener (low or no alcohol) is best suited for:","Dry and sensitive skin","Very oily skin|Acne with pustules|Combination skin only","Fresheners are gentle."],
+["F","Which AHA has the smallest molecule and penetrates most?","Glycolic acid","Lactic acid|Mandelic acid|Salicylic acid","Glycolic comes from sugar cane."],
+["F","Lactic acid is derived from:","Milk","Sugar cane|Papaya|Bitter almonds","Lactic acid is gentle and hydrating."],
+["F","Salicylic acid is a beta hydroxy acid that is:","Oil-soluble and good for acne-prone skin","Water-soluble and only for dry skin|An enzyme from papaya|A physical scrub","Oil solubility lets it get into the follicle."],
+["F","Papain is an enzyme exfoliant from:","Papaya","Pineapple|Milk|Sugar cane","Bromelain comes from pineapple."],
+["F","Bromelain is an enzyme from:","Pineapple","Papaya|Apples|Grapes","Enzymes dissolve keratin protein."],
+["F","Gommage is:","A roll-off exfoliating cream","A type of facial mask that hardens|A galvanic treatment|A massage movement","It's rubbed off once partly dry."],
+["F","Which is a mechanical (physical) exfoliation?","Microdermabrasion","Glycolic acid peel|Enzyme treatment|Lactic acid peel","Mechanical methods use friction."],
+["F","Texas estheticians may perform exfoliation that is:","Superficial, without reaching the dermis","Deep enough to reach the dermis|Medium-depth with consent|Any depth with gloves","Any procedure contacting the dermis is prohibited."],
+["F","A clay mask is best for:","Oily skin","Very dry skin|Dehydrated sensitive skin|Rosacea","Clay absorbs oil and tightens."],
+["F","An alginate mask is:","A seaweed-based mask that sets into a rubbery peel-off layer","A clay mask for oily skin|A warm wax mask|A sheet mask","Alginate is often applied over a serum."],
+["F","A paraffin mask is applied over:","A layer of gauze","Bare dry skin|A clay mask|The eyes, uncovered","Gauze lets the paraffin lift off easily."],
+["F","A modelage mask:","Heats as it sets and should be avoided on sensitive or capillary-prone skin","Cools the skin for rosacea|Is a gentle gel mask|Is applied directly to the eyes","Modelage is a thermal gypsum mask."],
+["F","A gel mask is best for:","Sensitive and dehydrated skin","Severely oily skin|Thick skin needing exfoliation|Removing blackheads","Gels hydrate and soothe."],
+["F","Which is a humectant?","Hyaluronic acid","Petrolatum|Mineral oil|Dimethicone","Humectants draw water into the skin."],
+["F","Which ingredient is an occlusive?","Petrolatum","Glycerin|Hyaluronic acid|Glycolic acid","Occlusives seal moisture in."],
+["F","Which is a physical (mineral) sunscreen ingredient?","Zinc oxide","Avobenzone|Octinoxate|Oxybenzone","Zinc oxide and titanium dioxide reflect UV."],
+["F","Effleurage is:","Light, gliding strokes used to begin and end a massage","Kneading|Tapping|Deep rubbing","Effleurage is the most relaxing movement."],
+["F","Petrissage is:","Kneading","Light stroking|Tapping|Shaking","Petrissage lifts and squeezes tissue."],
+["F","The most stimulating massage movement is:","Tapotement","Effleurage|Petrissage|Friction","Tapotement is tapping or percussion."],
+["F","Chucking, rolling and wringing are forms of:","Friction","Effleurage|Tapotement|Vibration","Friction moves layers of tissue over each other."],
+["F","The Dr. Jacquet movement is used for:","Oily skin","Dry skin|Sensitive skin|Rosacea","Its pinching motion helps move sebum out of the follicles."],
+["F","Massage movements are directed from the muscle's:","Insertion toward its origin","Origin toward its insertion|Center outward only|Bone toward skin","The origin is fixed; the insertion moves."],
+["F","Which muscle closes the eyelid?","Orbicularis oculi","Orbicularis oris|Frontalis|Masseter","Oculi = eye; oris = mouth."],
+["F","Which muscle is used for chewing?","Masseter","Frontalis|Zygomaticus|Platysma","Masseter and temporalis control mastication."],
+["F","Which muscle lifts the corners of the mouth to smile?","Zygomaticus","Mentalis|Buccinator|Procerus","Zygomaticus major and minor."],
+["F","The fifth cranial (trigeminal) nerve is the:","Chief sensory nerve of the face","Chief motor nerve of the face|Nerve of the neck muscles|Nerve of the tongue only","5 = sensation; 7 = facial movement."],
+["F","The largest and strongest bone of the face is the:","Mandible","Maxilla|Lacrimal|Zygomatic","The mandible is also the only movable facial bone."],
+["F","The smallest, most fragile bone of the face is the:","Lacrimal","Mandible|Nasal|Hyoid","The lacrimal bone forms part of the inner eye socket."],
+["F","Galvanic current is a:","Constant direct current that produces chemical effects","Alternating current that produces heat|Light therapy|Type of massage","Galvanic = DC = chemical changes."],
+["F","Desincrustation uses the:","Negative pole and an alkaline solution to soften sebum","Positive pole and an acidic solution|High-frequency neon electrode|Brush machine only","It saponifies sebum to ease extractions."],
+["F","The positive pole of galvanic current:","Closes pores, soothes nerves and decreases blood flow","Opens pores and stimulates|Softens tissue|Produces an alkaline reaction","Positive is acidic, calming and firming."],
+["F","The negative pole of galvanic current:","Softens tissue and increases blood flow","Closes pores|Soothes nerves|Produces an acidic reaction","Negative is alkaline and stimulating."],
+["F","Iontophoresis is used to:","Introduce water-soluble products into the skin","Remove hair|Exfoliate with brushes|Disinfect the skin with sparks","Like charges repel the product into the skin."],
+["F","Which is a contraindication for galvanic treatment?","A pacemaker or metal implants","Oily skin|Dry skin|Fine lines","Electrical current and metal don't mix."],
+["F","High-frequency current is:","A rapidly alternating current with a heating, germicidal effect","A direct current with chemical effects|A light therapy|A suction device","Tesla current is delivered through glass electrodes."],
+["F","In the indirect high-frequency method:","The client holds the electrode while the esthetician massages the face","The electrode is glided over gauze on the skin|Sparks are applied to pustules|No electrode is used","Indirect is stimulating for dry skin."],
+["F","High-frequency must never be used over:","Products containing alcohol","Gauze|Clean dry skin|Moisturizer without alcohol","Sparks can ignite alcohol."],
+["F","A neon-filled high-frequency electrode glows:","Orange-red","Violet-blue|Green|White","Argon glows violet-blue."],
+["F","A facial steamer should be filled with:","Distilled water","Tap water|Mineral water|Water with essential oils","Distilled water prevents mineral buildup."],
+["F","Before directing a steamer at the client, you should:","Wait until the steam flows evenly","Aim it at the face as soon as it is switched on|Hold it 2 inches from the face|Add alcohol to the water","Sputtering hot water can burn the client."],
+["F","When using a vacuum machine, you should:","Keep the tip moving and avoid dilated capillaries","Hold it in one spot for a minute|Use maximum suction on thin skin|Use it over rosacea","Suction can break capillaries."],
+["F","When using a magnifying lamp, you must:","Cover the client's eyes","Use it only in a dark room|Keep it close to the client's eyes uncovered|Turn off all other lights","Eye pads protect the client from the bright light."],
+["F","Which is true about extractions in Texas?","Gloves must be worn","Fingernails should be used for better grip|Gloves are optional|Extractions are done before cleansing","Gloves are required for any type of extraction."],
+["F","A client stopped taking isotretinoin (Accutane) last month. For waxing or exfoliation you should:","Wait at least 6 months to 1 year","Proceed normally|Wait 1 week|Use extra-hot wax","Accutane thins skin; waxing can lift or tear it."],
+["F","Benzoyl peroxide helps acne by:","Releasing oxygen that kills acne bacteria","Adding oil to the skin|Bleaching freckles|Closing pores","C. acnes bacteria cannot survive oxygen."],
+["F","Kojic acid and arbutin are used to:","Lighten hyperpigmentation","Increase oil production|Exfoliate by friction|Seal in moisture","They inhibit melanin production."],
+["F","A client uses Retin-A (tretinoin) on her face. Which service should be avoided there?","Waxing","A gentle gel mask|Effleurage|Applying moisturizer","Retinoids thin the skin; waxing can lift it."],
+["F","Blue LED light is used mainly to treat:","Acne","Wrinkles|Redness|Pigmentation","Blue light kills acne bacteria; red supports collagen."],
+["F","An ohm is a unit of:","Electrical resistance","Electrical pressure|Electrical strength|Electrical power","Volt = pressure, amp = strength, watt = power."],
+["F","A rectifier converts:","Alternating current to direct current","Direct current to alternating current|Light to heat|Heat to electricity","Galvanic machines use DC."],
+["F","Comedogenic means:","Likely to clog pores","Safe for sensitive skin|Antibacterial|Water-soluble","Acne-prone clients should use non-comedogenic products."],
+["F","An oil-in-water emulsion is:","A lighter lotion containing more water than oil","A heavy cream with more oil|An oil with no water|A powder","Water-in-oil emulsions are heavier."],
+
+// ── HAIR REMOVAL
+["H","The active growth phase of hair is:","Anagen","Catagen|Telogen|Lanugo","Anagen is the best phase for removal."],
+["H","The resting phase of the hair cycle is:","Telogen","Anagen|Catagen|Vellus","Telogen hairs are about to shed."],
+["H","The short transition phase of the hair cycle is:","Catagen","Anagen|Telogen|Terminal","The follicle shrinks during catagen."],
+["H","Soft, fine, unpigmented hair is called:","Vellus hair","Terminal hair|Lanugo|Coarse hair","Terminal hair is coarse and pigmented."],
+["H","Hirsutism is:","Excessive coarse hair in a male pattern on women","Excessive hair anywhere|Complete hair loss|Ingrown hair","Hirsutism can be hormonal; suggest a physician."],
+["H","Which hair removal method is recognized as permanent by the FDA?","Electrolysis","Waxing|Laser|Sugaring","Laser offers permanent reduction; electrolysis is permanent."],
+["H","A depilatory removes hair by:","Chemically dissolving the hair at or above the skin's surface","Pulling it from the follicle|Destroying the papilla with current|Twisting it with thread","Depilatories are alkaline; patch test first."],
+["H","Soft (strip) wax is applied:","In a thin layer in the direction of hair growth","In a thick layer against hair growth|In random directions|Only over hard wax","Apply with growth; remove against growth."],
+["H","A soft wax strip should be removed:","Quickly, against hair growth, parallel to the skin","Slowly, straight up from the skin|In the direction of growth|While the skin is loose","Pulling up can bruise or lift the skin."],
+["H","Hard wax is gentler for sensitive areas because it:","Grips the hair more than the skin and needs no strips","Is applied cold|Stays on for an hour|Dissolves hair chemically","Hard wax is removed against growth without strips."],
+["H","Wax temperature should first be tested on the:","Inside of the practitioner's wrist","Client's eyelid|Client's lip|Back of the client's hand","Then test a small area on the client."],
+["H","For waxing, hair should ideally be about:","¼ to ½ inch long","1/16 inch long|1 to 2 inches long|Shaved the day before","Too short won't grip; too long should be trimmed."],
+["H","Which is a Texas wax rule?","Wax may never be reused, and applicators may not be left standing in the wax","Wax may be reused if reheated|Applicators may stay in the pot between clients|Double-dipping is allowed with gloves","Each dip uses a new applicator; wax is never reused."],
+["H","Which client condition is a contraindication for waxing?","Use of topical retinoids on the area","Oily skin|Coarse hair|A recent haircut","Retinoids thin the skin and can cause lifting."],
+["H","After waxing, the client should avoid for 24–48 hours:","Sun, heat, tanning and exfoliation","Drinking water|Gentle moisturizer|Loose clothing","Heat and friction on fresh-waxed skin cause irritation."],
+["H","Sugaring paste is typically:","Applied against hair growth and removed with hair growth","Applied with growth and removed against growth|Removed with fabric strips only|Heated to the same temperature as hard wax","Sugaring works opposite to waxing."],
+["H","In Texas, thread used for threading is:","Single-use and discarded after each client","Disinfected and reused|Stored in a UV sanitizer|Used on up to three clients","Thread is on the Texas single-use list."],
+["H","When tweezing, hair should be pulled:","In the direction of growth","Against the direction of growth|Straight up from any angle|Several hairs at once","Hold the skin taut and pull in the direction of growth."],
+["H","The highest point of the brow arch typically lines up with the:","Outer edge of the iris","Inner corner of the eye|Center of the nose|Outer corner of the mouth","Start at the side of the nose, arch at the outer iris, end at the line from nostril to outer eye."],
+["H","Pseudofolliculitis refers to:","Ingrown hairs","A fungal infection|Excess sweating|A type of wax","Gentle exfoliation after 48 hours helps prevent them."],
+];
+
+const QB = QRAW.map((r,i)=>({id:i,c:r[0],q:r[1],ok:r[2],wrong:r[3].split("|"),x:r[4]}));
+
+// ───────── helpers
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffleArr=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function fmtDur(sec){sec=Math.max(0,Math.round(sec));if(sec<60)return sec+" s";const m=Math.floor(sec/60);if(m<60)return m+" min";const h=Math.floor(m/60);return h+" h "+String(m%60).padStart(2,"0")+" min";}
+function fmtWhen(iso){if(!iso)return "—";const d=new Date(iso);return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})+" · "+d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});}
+function fmtClock(sec){sec=Math.max(0,Math.ceil(sec));const m=Math.floor(sec/60),s=sec%60;return m+":"+String(s).padStart(2,"0");}
+
+// ───────── server (Cloudflare Worker)
+const API="https://esthetician-exam-log.shawntyd96.workers.dev";
+let serverOk=true;
+function send(type,id,data,beacon){
+  const body=JSON.stringify({type,id,data});
+  try{
+    if(beacon&&navigator.sendBeacon){navigator.sendBeacon(API+"/log",new Blob([body],{type:"text/plain"}));return Promise.resolve();}
+    return fetch(API+"/log",{method:"POST",headers:{"Content-Type":"text/plain"},body,keepalive:body.length<60000})
+      .then(r=>{if(!r.ok)throw new Error(r.status);if(!serverOk){serverOk=true;showTrackNote();}})
+      .catch(()=>{if(serverOk){serverOk=false;showTrackNote();}});
+  }catch(e){return Promise.resolve();}
+}
+
+// ───────── identity + tracking
+let deviceId=ls.get("tdlr-esth-device",null); if(!deviceId){deviceId=newId();ls.set("tdlr-esth-device",deviceId);}
+let studentName=ls.get("tdlr-esth-name","");
+let uid=null, ownerCode=ls.get("tdlr-esth-owner",""), isOwner=!!ownerCode;
+const personKey=()=>uid||("dev_"+deviceId);
+
+const sess={id:newId(),start:new Date().toISOString(),lastActive:new Date().toISOString(),activeSec:0,cards:0,got:0,missed:0,tests:0,testSec:0};
+let lastInteract=Date.now(), inTest=false, dirty=false, lastFlush=0, flushChain=Promise.resolve();
+function touch(){lastInteract=Date.now();}
+["pointerdown","keydown","scroll","touchstart"].forEach(ev=>addEventListener(ev,touch,{passive:true}));
+setInterval(()=>{
+  if(document.visibilityState!=="visible")return;
+  const idleLimit=inTest?5*60000:2*60000;
+  if(Date.now()-lastInteract<idleLimit){sess.activeSec+=15;if(inTest)sess.testSec+=15;dirty=true;}
+},15000);
+
+function sessionDoc(){return {key:personKey(),uid:uid||null,device:deviceId,name:studentName||"",start:sess.start,lastActive:new Date().toISOString(),activeSec:sess.activeSec,cards:sess.cards,got:sess.got,missed:sess.missed,tests:sess.tests,testSec:sess.testSec};}
+function flush(force,beacon){
+  if(isOwner)return;
+  if(!dirty&&!force)return;
+  if(!force&&Date.now()-lastFlush<60000)return;
+  if(sess.activeSec<15&&sess.cards===0&&sess.tests===0)return;
+  dirty=false;lastFlush=Date.now();
+  const body=sessionDoc();
+  if(beacon){send("session",sess.id,body,true);return;}
+  flushChain=flushChain.then(()=>send("session",sess.id,body));
+}
+function activity(){dirty=true;touch();flush(false);}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flush(true,true);});
+addEventListener("pagehide",()=>flush(true,true));
+
+function showTrackNote(){
+  const n=$("#trackNote");
+  if(isOwner){n.hidden=false;n.textContent="Owner mode is on for this device. The Study report tab shows each student's sessions and test scores. Studying on this device isn't logged.";return;}
+  if(serverOk){n.hidden=false;n.textContent="Your study time and practice test scores are shared with Cio Bela Multi-Service Salon so we can support your exam prep.";}
+  else{n.hidden=false;n.textContent="Can't reach the study log right now. Your progress is still saved on this device and will report again once you're back online.";}
+}
+
+// flashcard progress (local + synced)
+const KEY="tdlr-esth-v1";
+let prog=ls.get(KEY,{})||{};
+let progTimer=null;
+function saveProg(){
+  ls.set(KEY,prog);
+  if(isOwner)return;
+  clearTimeout(progTimer);
+  progTimer=setTimeout(()=>{const body={key:personKey(),map:prog,updated:new Date().toISOString()};flushChain=flushChain.then(()=>send("progress",personKey(),body));},2500);
+}
+
+// ───────── tabs
+let tab="cards";
+function setTab(t){
+  if(inTest&&t!=="test"){/* keep test running in background */}
+  tab=t;
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+  $("#p-cards").hidden=t!=="cards";$("#p-test").hidden=t!=="test";$("#p-report").hidden=t!=="report";
+  if(t==="report")renderReport();
+  if(t==="test"&&!inTest)renderHistory();
+  activity();
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
+
+// ───────── name prompt
+function maybeAskName(){ $("#namebar").hidden = isOwner || !!studentName; }
+$("#nameSave").onclick=()=>{const v=$("#nameInput").value.trim();if(!v){$("#nameInput").focus();return;}studentName=v.slice(0,60);ls.set("tdlr-esth-name",studentName);maybeAskName();dirty=true;flush(true);};
+$("#nameInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("#nameSave").click();});
+
+// ═════════ FLASHCARDS
+let cat="ALL", shuffle=false, missedOnly=false, deck=[], pos=0, flipped=false;
+function buildDeck(keepId){
+  let list=CARDS.filter(c=>cat==="ALL"||c.c===cat);
+  if(missedOnly)list=list.filter(c=>prog[c.id]==="m");
+  if(shuffle)list=shuffleArr(list);
+  deck=list;pos=0;
+  if(keepId!=null){const k=deck.findIndex(c=>c.id===keepId);if(k>=0)pos=k;}
+}
+const chipsEl=$("#chips");
+function renderChips(){
+  const all=[["ALL","All cards",null,CARDS.length]];
+  ORDER.forEach(k=>all.push([k,CATS[k].short,CATS[k].w,CARDS.filter(c=>c.c===k).length]));
+  chipsEl.innerHTML=all.map(([k,n,w,cnt])=>`<button class="chip" data-k="${k}" aria-pressed="${cat===k}" style="--c:${k==="ALL"?"var(--ink)":CC[k]}">${k==="ALL"?"":'<span class="dot"></span>'}${n}<span class="w">${w!=null?w+"%":cnt}</span></button>`).join("");
+}
+chipsEl.addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;cat=b.dataset.k;renderChips();buildDeck();flipped=false;restoreCard();render();});
+function renderOutline(){
+  $("#outline").innerHTML=ORDER.map(k=>{const c=CATS[k];return `<div class="ol" style="--c:${CC[k]}"><div class="t">${c.name}<span>${c.w}% · ${c.items} Qs</span></div><div class="bar"><i style="width:${c.w/28*100}%"></i></div><div class="d">${c.d}</div></div>`}).join("");
+}
+function stats(){const pool=CARDS.filter(c=>cat==="ALL"||c.c===cat);let g=0,m=0;pool.forEach(c=>{if(prog[c.id]==="k")g++;else if(prog[c.id]==="m")m++;});return {n:pool.length,g,m};}
+function restoreCard(){
+  $("#studyArea").innerHTML=`<div class="stage"><div class="card" id="card" tabindex="0" role="button"><div class="face front" id="front"></div><div class="face back" id="back"></div></div></div>`;
+  $("#card").addEventListener("click",flip);
+  $("#card").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();flip();}});
+}
+function render(){
+  const st=stats(), mg=$("#meter").children;
+  mg[0].style.width=(st.n?st.g/st.n*100:0)+"%";mg[1].style.width=(st.n?st.m/st.n*100:0)+"%";
+  $("#legend").innerHTML=`<span class="lg">${st.g} got it</span><span class="lr">${st.m} study again</span><span class="ln">${st.n-st.g-st.m} not seen</span>`;
+  $("#missedOnly").setAttribute("aria-pressed",missedOnly);$("#shuffle").setAttribute("aria-pressed",shuffle);
+  const area=$("#studyArea"), actions=$("#actions");
+  if(!deck.length){
+    $("#count").textContent="0 cards";
+    area.innerHTML=`<div class="box"><h2>No cards to review here</h2><p>${missedOnly?"Nothing is marked “Study again” in this section. Turn off Missed only to see every card.":"Pick another section."}</p><div class="row"><button class="btn got" id="offMissed">Show all cards</button></div></div>`;
+    actions.hidden=true;const b=$("#offMissed");if(b)b.onclick=()=>{missedOnly=false;buildDeck();restoreCard();render();};return;
+  }
+  if(pos>=deck.length){
+    const missed=deck.filter(c=>prog[c.id]==="m").length;
+    $("#count").textContent=`${deck.length} / ${deck.length}`;
+    area.innerHTML=`<div class="box"><h2>Round complete</h2><p>${deck.length-missed} of ${deck.length} marked “Got it”. ${missed?missed+" to study again.":"Nothing left to review in this set."}</p><div class="row">${missed?'<button class="btn miss" id="againMissed">Review the '+missed+' I missed</button>':''}<button class="btn plain" id="restart">Start this set over</button></div></div>`;
+    actions.hidden=true;
+    const a=$("#againMissed");if(a)a.onclick=()=>{missedOnly=true;buildDeck();restoreCard();render();};
+    $("#restart").onclick=()=>{buildDeck();restoreCard();render();};return;
+  }
+  actions.hidden=false;
+  if(!$("#card"))restoreCard();
+  const c=deck[pos], C=CATS[c.c], s2=prog[c.id];
+  const badge=s2==="k"?'<span class="status known">Got it</span>':s2==="m"?'<span class="status missed">Study again</span>':`<span class="src">${c.s}</span>`;
+  $("#count").textContent=`Card ${pos+1} of ${deck.length}`;
+  $("#front").innerHTML=`<div class="tagrow"><span class="tag" style="--c:${CC[c.c]}">${C.name}</span>${badge}</div><div class="q">${c.q}</div><div class="hint">Tap to reveal the answer</div>`;
+  $("#back").innerHTML=`<div class="tagrow"><span class="tag" style="--c:${CC[c.c]}">${C.name}</span><span class="src">${c.s}</span></div><div class="qsmall">${c.q}</div><div class="a">${c.a}</div>${c.t?`<div class="tip"><b>Exam tip</b>${c.t}</div>`:""}`;
+  const card=$("#card");card.classList.toggle("flipped",flipped);
+  card.setAttribute("aria-label",(flipped?"Answer showing. ":"Question showing. ")+"Press to flip.");
+}
+function flip(){if(!$("#card"))return;flipped=!flipped;$("#card").classList.toggle("flipped",flipped);render();}
+function go(d){if(!deck.length)return;pos=Math.max(0,Math.min(deck.length,pos+d));flipped=false;if(pos<deck.length&&!$("#card"))restoreCard();render();}
+function mark(v){
+  if(!deck.length||pos>=deck.length)return;
+  if(!flipped){flip();return;}
+  prog[deck[pos].id]=v;saveProg();
+  sess.cards++; if(v==="k")sess.got++; else sess.missed++;
+  activity();go(1);
+}
+$("#prev").onclick=()=>go(-1);$("#next").onclick=()=>go(1);
+$("#gotBtn").onclick=()=>mark("k");$("#missBtn").onclick=()=>mark("m");
+$("#shuffle").onclick=()=>{shuffle=!shuffle;const id=deck[pos]?deck[pos].id:null;buildDeck(shuffle?null:id);flipped=false;restoreCard();render();};
+$("#missedOnly").onclick=()=>{missedOnly=!missedOnly;buildDeck();flipped=false;restoreCard();render();};
+let resetArmed=false;
+$("#reset").onclick=e=>{
+  const b=e.currentTarget;
+  if(!resetArmed){resetArmed=true;b.textContent="Tap again to clear";setTimeout(()=>{resetArmed=false;b.textContent="Reset progress";},3000);return;}
+  prog={};saveProg();resetArmed=false;b.textContent="Progress cleared";setTimeout(()=>b.textContent="Reset progress",1500);
+  buildDeck();flipped=false;restoreCard();render();
+};
+document.addEventListener("keydown",e=>{
+  if(tab==="test"&&inTest){
+    if(e.target.closest("input"))return;
+    const k=e.key.toLowerCase();
+    if(["a","b","c","d"].includes(k)){pick("abcd".indexOf(k));}
+    else if(e.key==="ArrowRight")tMove(1);else if(e.key==="ArrowLeft")tMove(-1);
+    return;
+  }
+  if(tab!=="cards"||e.target.closest("input"))return;
+  if(e.target.closest("button")&&(e.key===" "||e.key==="Enter"))return;
+  if(e.key===" "){e.preventDefault();flip();}
+  else if(e.key==="ArrowRight")go(1);else if(e.key==="ArrowLeft")go(-1);
+  else if(e.key==="1")mark("m");else if(e.key==="2")mark("k");
+});
+
+// ═════════ PRACTICE TEST
+const MIX={full:{L:15,I:19,K:12,F:21,H:8,min:105,label:"Full practice exam"},quick:{L:4,I:5,K:3,F:6,H:2,min:28,label:"Quick quiz"}};
+let T=null, tick=null;
+function startTest(kind){
+  const m=MIX[kind];let items=[];
+  ORDER.forEach(c=>{shuffleArr(QB.filter(q=>q.c===c)).slice(0,m[c]).forEach(q=>items.push({q,opts:shuffleArr([q.ok,...q.wrong]),ans:null,flag:false}));});
+  items=shuffleArr(items);
+  T={kind,items,idx:0,start:Date.now(),ends:Date.now()+m.min*60000};
+  inTest=true;
+  $("#testStart").hidden=true;$("#testResult").hidden=true;$("#testRun").hidden=false;
+  clearInterval(tick);tick=setInterval(updTimer,1000);updTimer();renderQ();activity();
+  scrollTo({top:0});
+}
+document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",()=>startTest(b.dataset.kind)));
+function updTimer(){
+  if(!T)return;const left=(T.ends-Date.now())/1000;
+  const el=$("#tTimer");el.textContent=fmtClock(left)+" left";el.classList.toggle("low",left<300);
+  if(left<=0)submitTest(true);
+}
+function renderQ(){
+  const it=T.items[T.idx], n=T.items.length;
+  $("#tPos").textContent=`Question ${T.idx+1} of ${n}`;
+  const tg=$("#tTag");tg.textContent=CATS[it.q.c].name;tg.style.setProperty("--c",CC[it.q.c]);
+  $("#tQ").textContent=it.q.q;
+  $("#tOpts").innerHTML=it.opts.map((o,i)=>`<button class="opt" role="radio" aria-checked="${it.ans===i}" data-i="${i}"><span class="l">${"ABCD"[i]}</span><span>${esc(o)}</span></button>`).join("");
+  $("#tFlag").setAttribute("aria-pressed",it.flag);$("#tFlag").textContent=it.flag?"Flagged":"Flag for review";
+  $("#tPrev").disabled=T.idx===0;$("#tPrev").style.opacity=T.idx===0?.4:1;
+  $("#tNext").textContent=T.idx===n-1?"Review ›":"Next ›";
+  const answered=T.items.filter(x=>x.ans!=null).length;
+  $("#tAnswered").textContent=`${answered} of ${n} answered`;
+  $("#tGrid").innerHTML=T.items.map((x,i)=>`<button class="gq${x.ans!=null?" ans":""}${x.flag?" flag":""}${i===T.idx?" cur":""}" data-i="${i}" aria-label="Question ${i+1}${x.ans!=null?", answered":""}${x.flag?", flagged":""}">${i+1}</button>`).join("");
+}
+function pick(i){if(!T)return;T.items[T.idx].ans=i;renderQ();activity();}
+$("#tOpts").addEventListener("click",e=>{const b=e.target.closest(".opt");if(b)pick(+b.dataset.i);});
+$("#tGrid").addEventListener("click",e=>{const b=e.target.closest(".gq");if(b){T.idx=+b.dataset.i;renderQ();}});
+function tMove(d){if(!T)return;const n=T.items.length;if(d>0&&T.idx===n-1){$("#tGrid").scrollIntoView({behavior:"smooth",block:"center"});return;}T.idx=Math.max(0,Math.min(n-1,T.idx+d));renderQ();scrollTo({top:0});}
+$("#tPrev").onclick=()=>tMove(-1);$("#tNext").onclick=()=>tMove(1);
+$("#tFlag").onclick=()=>{const it=T.items[T.idx];it.flag=!it.flag;renderQ();};
+let submitArmed=false;
+function onSubmitClick(){
+  const left=T?T.items.filter(x=>x.ans==null).length:0;
+  if(left&&!submitArmed){submitArmed=true;$("#submitArea").innerHTML=`<span class="count" style="color:var(--rose)">${left} unanswered. Unanswered questions count as wrong.</span><button class="btn miss" id="tSubmit2">Submit anyway</button><button class="btn plain" id="tKeep">Keep working</button>`;
+    $("#tSubmit2").onclick=()=>submitTest(false);$("#tKeep").onclick=resetSubmitArea;return;}
+  submitTest(false);
+}
+function resetSubmitArea(){submitArmed=false;$("#submitArea").innerHTML=`<button class="btn got" id="tSubmit">Submit test</button>`;$("#tSubmit").onclick=onSubmitClick;}
+$("#tSubmit").onclick=onSubmitClick;
+function submitTest(timeUp){
+  if(!T)return;clearInterval(tick);inTest=false;
+  const by={};ORDER.forEach(c=>by[c]={r:0,t:0});
+  const missedQ=[];let right=0;
+  T.items.forEach(x=>{const ok=x.ans!=null&&x.opts[x.ans]===x.q.ok;by[x.q.c].t++;if(ok){by[x.q.c].r++;right++;}else missedQ.push(x);});
+  const total=T.items.length, pct=Math.round(right/total*100), passed=right/total>=0.7;
+  const durationSec=Math.round((Math.min(Date.now(),T.ends)-T.start)/1000);
+  const rec={id:newId(),key:personKey(),uid:uid||null,device:deviceId,name:studentName||"",kind:T.kind,startedAt:new Date(T.start).toISOString(),finishedAt:new Date().toISOString(),durationSec,timeUp:!!timeUp,score:right,total,pct,passed,bySection:by,missed:missedQ.slice(0,80).map(x=>({c:x.q.c,q:x.q.q,right:x.q.ok,yours:x.ans!=null?x.opts[x.ans]:null}))};
+  const hist=ls.get("tdlr-esth-tests",[]);hist.unshift(rec);ls.set("tdlr-esth-tests",hist.slice(0,50));
+  sess.tests++;dirty=true;
+  if(!isOwner){flushChain=flushChain.then(()=>send("test",rec.id,rec));}
+  flush(true);
+  renderResult(rec,missedQ,timeUp);T=null;resetSubmitArea();
+}
+function sectionBars(by){
+  return ORDER.map(c=>{const s=by[c];if(!s||!s.t)return "";const p=Math.round(s.r/s.t*100);return `<div class="secrow" style="--c:${CC[c]}"><span>${CATS[c].name}</span><b style="font-variant-numeric:tabular-nums">${s.r}/${s.t} · ${p}%</b><div class="secbar"><i style="width:${p}%"></i><s></s></div></div>`;}).join("");
+}
+function renderResult(rec,missedQ,timeUp){
+  $("#testRun").hidden=true;const el=$("#testResult");el.hidden=false;
+  const weakest=ORDER.filter(c=>rec.bySection[c].t).sort((a,b)=>rec.bySection[a].r/rec.bySection[a].t-rec.bySection[b].r/rec.bySection[b].t)[0];
+  el.innerHTML=`<div class="box">
+    ${timeUp?'<p style="color:var(--rose)">Time ran out, so the test was submitted automatically.</p>':""}
+    <div class="score"><span class="big">${rec.pct}%</span><span class="pill ${rec.passed?"pass":"fail"}">${rec.passed?"Passing":"Not passing yet"}</span></div>
+    <p>${rec.score} of ${rec.total} correct · needs ${Math.ceil(rec.total*0.7)} to pass · finished in ${fmtDur(rec.durationSec)}</p>
+    <div style="display:flex;flex-direction:column;gap:10px">${sectionBars(rec.bySection)}</div>
+    <p class="foot">The line on each bar marks 70%.${weakest?` Weakest section: <b style="color:var(--ink)">${CATS[weakest].name}</b>. Study those flashcards next.`:""}</p>
+    <div class="row"><button class="btn got" id="rAgain">Take another test</button>${weakest?`<button class="btn plain" id="rCards">Study ${CATS[weakest].short} cards</button>`:""}</div>
+  </div>
+  ${missedQ.length?`<div class="box"><h2>Review what you missed (${missedQ.length})</h2><div class="review">${missedQ.map(x=>`<div class="rv" style="--c:${CC[x.q.c]}"><b>${esc(x.q.q)}</b>${x.ans!=null?`<span class="yours">Your answer: ${esc(x.opts[x.ans])}</span>`:'<span class="yours">Not answered</span>'}<span class="right">Correct: ${esc(x.q.ok)}</span><span class="why">${esc(x.q.x)}</span></div>`).join("")}</div></div>`:""}`;
+  $("#rAgain").onclick=()=>{el.hidden=true;$("#testStart").hidden=false;renderHistory();scrollTo({top:0});};
+  const rc=$("#rCards");if(rc)rc.onclick=()=>{cat=weakest;renderChips();buildDeck();restoreCard();render();el.hidden=true;$("#testStart").hidden=false;setTab("cards");};
+  scrollTo({top:0});
+}
+function renderHistory(){
+  const hist=ls.get("tdlr-esth-tests",[]);
+  if(!hist.length){$("#historyBody").innerHTML="<p>No tests yet. Your scores will appear here after your first practice test.</p>";return;}
+  $("#historyBody").innerHTML=`<div class="tablebox"><table><thead><tr><th>Taken</th><th>Test</th><th>Score</th><th>Result</th></tr></thead><tbody>${hist.slice(0,15).map(r=>`<tr><td>${fmtWhen(r.finishedAt)}</td><td>${MIX[r.kind]?MIX[r.kind].label:r.kind}</td><td>${r.score}/${r.total} (${r.pct}%)</td><td><span class="pill ${r.passed?"pass":"fail"}">${r.passed?"Pass":"Below 70%"}</span></td></tr>`).join("")}</tbody></table></div>`;
+}
+
+// ═════════ OWNER REPORT
+let SESS=[], TESTS=[], reportReady=false, reportErr="";
+async function loadReport(){
+  reportErr="";
+  try{
+    const r=await fetch(API+"/report?code="+encodeURIComponent(ownerCode),{cache:"no-store"});
+    const j=await r.json();
+    if(r.status===401){reportErr="passcode";}
+    else if(!j.ok){reportErr="server";}
+    else{SESS=j.sessions||[];TESTS=j.tests||[];}
+  }catch(e){reportErr="server";}
+  reportReady=true;
+}
+function renderLogin(msg){
+  $("#reportBody").innerHTML=`<div class="box"><h2>Owner login</h2><p>Enter the passcode you set in Cloudflare to see the study report on this device.</p>${msg?`<p style="color:var(--rose)">${msg}</p>`:""}<div class="row"><input id="codeInput" type="password" autocomplete="current-password" placeholder="Passcode" style="flex:1 1 180px;min-width:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:10px;font:500 15px var(--body)"><button class="btn got" id="codeGo">Open report</button></div></div>`;
+  const go=async()=>{const v=$("#codeInput").value.trim();if(!v)return;ownerCode=v;$("#codeGo").textContent="Checking…";await loadReport();
+    if(reportErr==="passcode"){ownerCode="";renderLogin("That passcode didn't match.");return;}
+    if(reportErr){ownerCode="";renderLogin("Couldn't reach the study log. Check that the worker is deployed, then try again.");return;}
+    ls.set("tdlr-esth-owner",ownerCode);isOwner=true;maybeAskName();showTrackNote();renderReport();};
+  $("#codeGo").onclick=go;$("#codeInput").addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+}
+async function renderReport(){
+  const body=$("#reportBody");
+  if(!isOwner){renderLogin("");return;}
+  if(!reportReady){body.innerHTML=`<div class="box"><p>Loading study activity…</p></div>`;await loadReport();if(tab!=="report")return;}
+  if(reportErr==="passcode"){ownerCode="";isOwner=false;ls.set("tdlr-esth-owner","");showTrackNote();renderLogin("Your saved passcode no longer works. Enter the current one.");return;}
+  if(reportErr){body.innerHTML=`<div class="box"><h2>Couldn't load the report</h2><p>The study log didn't respond. Check your connection and try again.</p><div class="row"><button class="btn got" id="rRetry">Try again</button></div></div>`;$("#rRetry").onclick=()=>{reportReady=false;renderReport();};return;}
+  const people={};
+  const add=(r)=>{const k=r.key||r.device;if(!people[k])people[k]={key:k,uid:r.uid||null,names:new Set(),sessions:[],tests:[]};if(r.name)people[k].names.add(r.name);if(r.uid)people[k].uid=r.uid;return people[k];};
+  SESS.forEach(s=>add(s).sessions.push(s));TESTS.forEach(t=>add(t).tests.push(t));
+  const list=Object.values(people).map(p=>{p.sessions.sort((a,b)=>b.start.localeCompare(a.start));p.tests.sort((a,b)=>b.finishedAt.localeCompare(a.finishedAt));p.last=[p.sessions[0]&&p.sessions[0].lastActive,p.tests[0]&&p.tests[0].finishedAt].filter(Boolean).sort().pop()||"";return p;}).sort((a,b)=>b.last.localeCompare(a.last));
+  const bar=`<div class="row" style="justify-content:space-between"><span class="count">Updated ${new Date().toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span><div class="row"><button class="tbtn" id="rRefresh">Refresh</button><button class="tbtn" id="rLogout">Log out of owner mode</button></div></div>`;
+  const wire=()=>{$("#rRefresh").onclick=()=>{reportReady=false;renderReport();};$("#rLogout").onclick=()=>{ownerCode="";isOwner=false;ls.set("tdlr-esth-owner","");maybeAskName();showTrackNote();renderLogin("");};};
+  if(!list.length){body.innerHTML=bar+`<div class="box"><h2>No study activity yet</h2><p>Once she opens the link and starts studying, each session and practice test shows up here with the date, start time and how long she studied.</p></div>`;wire();return;}
+  const profs={};
+  const now=Date.now(), dayMs=86400000;
+  body.innerHTML=bar;wire();
+  list.forEach(p=>{
+    const prof=p.uid?profs[p.uid]:null;
+    const name=(prof&&prof.name)||[...p.names].pop()||"Student";
+    const week=p.sessions.filter(s=>now-new Date(s.start).getTime()<7*dayMs);
+    const weekSec=week.reduce((a,s)=>a+(s.activeSec||0),0), allSec=p.sessions.reduce((a,s)=>a+(s.activeSec||0),0);
+    const cardsAll=p.sessions.reduce((a,s)=>a+(s.cards||0),0);
+    const lastTest=p.tests[0], best=p.tests.reduce((m,t)=>Math.max(m,t.pct),0);
+    const fulls=p.tests.filter(t=>t.kind==="full");
+    // last 7 days bars
+    const days=[];for(let i=6;i>=0;i--){const d=new Date(now-i*dayMs);d.setHours(0,0,0,0);const nx=d.getTime()+dayMs;const sec=p.sessions.filter(s=>{const t=new Date(s.start).getTime();return t>=d.getTime()&&t<nx;}).reduce((a,s)=>a+(s.activeSec||0),0);days.push({lbl:d.toLocaleDateString(undefined,{weekday:"short"}),sec});}
+    const maxSec=Math.max(600,...days.map(d=>d.sec));
+    // section averages over all tests
+    const agg={};ORDER.forEach(c=>agg[c]={r:0,t:0});p.tests.forEach(t=>ORDER.forEach(c=>{if(t.bySection&&t.bySection[c]){agg[c].r+=t.bySection[c].r;agg[c].t+=t.bySection[c].t;}}));
+    const shown=p.sessions.filter(s=>(s.activeSec||0)>=30||s.cards||s.tests);
+    const sec=document.createElement("div");sec.className="panel";
+    sec.innerHTML=`<div class="box">
+      <div class="person"><h3></h3></div>
+      <p>Last studied: <b style="color:var(--ink)">${fmtWhen(p.last)}</b></p>
+      <div class="kpis">
+        <div class="kpi"><span>Study time, last 7 days</span><b>${fmtDur(weekSec)}</b></div>
+        <div class="kpi"><span>Study time, all time</span><b>${fmtDur(allSec)}</b></div>
+        <div class="kpi"><span>Sessions</span><b>${shown.length}</b></div>
+        <div class="kpi"><span>Cards reviewed</span><b>${cardsAll}</b></div>
+        <div class="kpi"><span>Latest test</span><b>${lastTest?lastTest.pct+"%":"—"}</b></div>
+        <div class="kpi"><span>Best / full exams</span><b>${p.tests.length?best+"%":"—"} · ${fulls.length}</b></div>
+      </div>
+      <div><div class="count" style="margin-bottom:6px">Study time by day, last 7 days</div>
+      <div class="week">${days.map(d=>`<div class="wd"><span>${d.sec?Math.round(d.sec/60)+"m":""}</span><i style="height:${Math.round(d.sec/maxSec*80)}px"></i><span>${d.lbl}</span></div>`).join("")}</div></div>
+      ${p.tests.length?`<div style="display:flex;flex-direction:column;gap:10px"><div class="count">Average by section across all practice tests (line = 70%)</div>${sectionBars(agg)}</div>`:""}
+    </div>
+    <div class="box"><h2>Study sessions</h2>${shown.length?`<div class="tablebox"><table><thead><tr><th>Started</th><th>Active time</th><th>Cards</th><th>Got / again</th><th>Tests</th></tr></thead><tbody>${shown.slice(0,40).map(s=>`<tr><td>${fmtWhen(s.start)}</td><td>${fmtDur(s.activeSec||0)}</td><td>${s.cards||0}</td><td>${s.got||0} / ${s.missed||0}</td><td>${s.tests||0}</td></tr>`).join("")}</tbody></table></div><p class="foot">Active time counts only while the page is open on screen and she's interacting (idle over 2 minutes isn't counted; 5 minutes during a test).</p>`:"<p>No sessions yet.</p>"}</div>
+    <div class="box"><h2>Practice test results</h2>${p.tests.length?`<div class="tablebox"><table><thead><tr><th>Finished</th><th>Test</th><th>Score</th><th>Result</th><th>Time taken</th></tr></thead><tbody>${p.tests.slice(0,30).map(t=>`<tr><td>${fmtWhen(t.finishedAt)}</td><td>${MIX[t.kind]?MIX[t.kind].label:esc(t.kind)}</td><td>${t.score}/${t.total} (${t.pct}%)</td><td><span class="pill ${t.passed?"pass":"fail"}">${t.passed?"Pass":"Below 70%"}</span></td><td>${fmtDur(t.durationSec)}${t.timeUp?" (time ran out)":""}</td></tr>`).join("")}</tbody></table></div>
+      ${lastTest&&lastTest.missed&&lastTest.missed.length?`<details><summary style="cursor:pointer;font-weight:600">Questions missed on the latest test (${lastTest.missed.length})</summary><div class="review" style="margin-top:10px">${lastTest.missed.map(m=>`<div class="rv" style="--c:${CC[m.c]||"var(--muted)"}"><b>${esc(m.q)}</b><span class="yours">${m.yours?"Answered: "+esc(m.yours):"Not answered"}</span><span class="right">Correct: ${esc(m.right)}</span></div>`).join("")}</div></details>`:""}`:"<p>No practice tests yet.</p>"}</div>`;
+    sec.querySelector("h3").textContent=name;
+    body.appendChild(sec);
+  });
+}
+
+// ═════════ boot
+renderChips();renderOutline();buildDeck();restoreCard();render();renderHistory();
+maybeAskName();showTrackNote();
+if(!isOwner){
+  fetch(API+"/progress?key="+encodeURIComponent(personKey()),{cache:"no-store"}).then(r=>r.json()).then(j=>{
+    if(j&&j.data&&j.data.map){prog=Object.assign({},j.data.map,prog);ls.set(KEY,prog);render();}
+  }).catch(()=>{});
+}
+</script>
+
+</body>
+</html>

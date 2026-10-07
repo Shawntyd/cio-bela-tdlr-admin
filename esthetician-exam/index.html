@@ -767,7 +767,7 @@ function send(type,id,data,beacon){
 
 // ───────── identity + tracking
 let deviceId=ls.get("tdlr-esth-device",null); if(!deviceId){deviceId=newId();ls.set("tdlr-esth-device",deviceId);}
-let studentName=ls.get("tdlr-esth-name","");
+let studentName="Mia";
 let uid=null, ownerCode=ls.get("tdlr-esth-owner",""), isOwner=!!ownerCode;
 const personKey=()=>uid||("dev_"+deviceId);
 

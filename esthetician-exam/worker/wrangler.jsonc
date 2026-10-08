@@ -1,0 +1,18 @@
+{
+  "name": "esthetician-exam-log",
+  "main": "src/index.js",
+  "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "kv_namespaces": [
+    { "binding": "EXAM_KV" }
+  ],
+  "durable_objects": {
+    "bindings": [{ "name": "ROOM", "class_name": "StudyRoom" }]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["StudyRoom"] }
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://shawntyd.github.io"
+  }
+}

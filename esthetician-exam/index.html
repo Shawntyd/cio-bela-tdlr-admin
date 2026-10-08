@@ -45,7 +45,7 @@ h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;text-wrap:
 .facts{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
 .facts b{color:var(--ink);font-weight:600}
 .tabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px}
-.tab{flex:1;border:0;background:transparent;color:var(--muted);font:600 14px var(--body);padding:10px 8px;border-radius:9px;cursor:pointer;min-width:0}
+.tab{flex:1;border:0;background:transparent;color:var(--muted);font:600 13px var(--body);padding:10px 4px;border-radius:9px;cursor:pointer;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
 .panel{display:flex;flex-direction:column;gap:18px}
 .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;margin-inline:-16px;padding-inline:16px;border-bottom:1px solid var(--line)}
@@ -189,6 +189,7 @@ tr:last-child td{border-bottom:0}
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="t-drill" aria-selected="true" data-tab="drill">Flashcards</button>
+    <button class="tab" role="tab" id="t-live" aria-selected="false" data-tab="live">Together</button>
     <button class="tab" role="tab" id="t-cards" aria-selected="false" data-tab="cards">Notes</button>
     <button class="tab" role="tab" id="t-test" aria-selected="false" data-tab="test">Test</button>
     <button class="tab" role="tab" id="t-report" aria-selected="false" data-tab="report">Report</button>
@@ -206,6 +207,9 @@ tr:last-child td{border-bottom:0}
     <div class="box" id="drillCard"></div>
     <div class="keys">Pick an answer to check it. Cards you miss come back until you get them right twice in a row. Keyboard: A–D to answer, Enter for the next card.</div>
   </div>
+
+  <!-- STUDY TOGETHER (live, owner drives) -->
+  <div class="panel" id="p-live" hidden><div id="liveBody"></div></div>
 
   <!-- NOTES (read-only) -->
   <div class="panel" id="p-cards" hidden>
@@ -861,8 +865,9 @@ function setTab(t){
   if(inTest&&t!=="test"){/* keep test running in background */}
   tab=t;
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
-  $("#p-drill").hidden=t!=="drill";$("#p-cards").hidden=t!=="cards";$("#p-test").hidden=t!=="test";$("#p-report").hidden=t!=="report";
+  $("#p-drill").hidden=t!=="drill";$("#p-live").hidden=t!=="live";$("#p-cards").hidden=t!=="cards";$("#p-test").hidden=t!=="test";$("#p-report").hidden=t!=="report";
   if(t==="drill")renderDrill();
+  if(t==="live")renderLive();
   if(t==="report")renderReport();
   if(t==="test"&&!inTest)renderHistory();
   activity();
@@ -956,6 +961,11 @@ document.addEventListener("keydown",e=>{
     else if(e.key==="ArrowRight")tMove(1);else if(e.key==="ArrowLeft")tMove(-1);
     return;
   }
+  if(tab==="live"&&!isOwner){
+    const k=e.key.toLowerCase();
+    if(["a","b","c","d"].includes(k))livePick("abcd".indexOf(k));
+    return;
+  }
   if(tab==="drill"){
     if(e.target.closest("input"))return;
     const k=e.key.toLowerCase();
@@ -1012,6 +1022,102 @@ function dPick(i){
   dToday.n++;if(ok)dToday.c++;ls.set("tdlr-esth-today",dToday);
   sess.cards++;if(ok)sess.got++;else sess.missed++;
   activity();renderDrill();
+}
+
+// ═════════ STUDY TOGETHER (owner's phone drives, Mia's phone follows)
+const live={joined:false,timer:null,state:null,src:"ALL",used:[],myN:0,myPick:null,err:"",busy:false};
+const liveOpts=st=>{const q=QB.at(st.qid);if(!q)return [];const all=[q.ok,...q.wrong];return st.order.map(i=>all.at(i));};
+async function roomGet(){const r=await fetch(API+"/room"+(isOwner?"":"?who=student"),{cache:"no-store"});return r.json();}
+async function roomHost(state){const r=await fetch(API+"/room/host",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({code:ownerCode,state})});const j=await r.json();if(r.status===401)j.err="passcode";return j;}
+function livePoll(on){
+  clearInterval(live.timer);live.timer=null;if(!on)return;
+  const tick=async()=>{if(document.visibilityState!=="visible")return;try{const j=await roomGet();if(j&&j.ok){const changed=JSON.stringify(j.state)!==JSON.stringify(live.state)||j.seen!==live.seen;live.state=j.state;live.seen=j.seen;if(changed&&tab==="live")renderLive();}}catch(e){}};
+  tick();live.timer=setInterval(tick,1000);
+}
+function herMissed(){
+  const ids=new Set();(PROG||[]).forEach(g=>{if(g&&g.mastery)for(const [id,m] of Object.entries(g.mastery)){if(mstatus(m)==="fix")ids.add(+id);}});
+  return QB.filter(q=>ids.has(q.id));
+}
+function livePool(){if(live.src==="MISSED")return herMissed();return QB.filter(q=>live.src==="ALL"||q.c===live.src);}
+async function hostNext(){
+  if(live.busy)return;
+  let pool=livePool().filter(q=>!live.used.includes(q.id));
+  if(!pool.length){live.used=[];pool=livePool();}
+  if(!pool.length){live.err=live.src==="MISSED"?"She has no missed questions right now. Pick a section instead.":"No questions in that set.";renderLive();return;}
+  const q=pool.at(Math.floor(Math.random()*pool.length));live.used.push(q.id);
+  const n=(live.state&&live.state.active?live.state.n:0)+1;
+  live.busy=true;live.err="";
+  const j=await roomHost({active:true,n,qid:q.id,order:shuffleArr([0,1,2,3]),src:live.src});
+  live.busy=false;
+  if(!j.ok){live.err=j.err==="passcode"?"Your passcode was rejected. Log in again on the Report tab.":"Couldn't reach the study log. Check your connection.";renderLive();return;}
+  live.state=j.state;renderLive();
+}
+async function hostEnd(){live.busy=true;await roomHost({active:false,n:(live.state&&live.state.n)||0});live.busy=false;live.state={active:false};live.used=[];renderLive();}
+function livePick(i){
+  const st=live.state;if(!st||!st.active||live.myN===st.n)return;
+  const q=QB.at(st.qid), opts=liveOpts(st), ok=opts.at(i)===q.ok;
+  live.myN=st.n;live.myPick=i;
+  noteAnswer(q,opts.at(i),ok);saveMastery(false);
+  dToday.n++;if(ok)dToday.c++;ls.set("tdlr-esth-today",dToday);
+  sess.cards++;if(ok)sess.got++;else sess.missed++;activity();
+  fetch(API+"/room/pick",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({n:st.n,pick:i,ok})}).catch(()=>{});
+  renderLive();
+}
+function liveCard(st,owner){
+  const q=QB.at(st.qid), opts=liveOpts(st);
+  const mine=!owner&&live.myN===st.n?live.myPick:null;
+  const herPick=owner?(st.pick!=null?st.pick:null):mine;
+  const showAns=owner||mine!=null;
+  return `<div class="tagrow"><span class="tag" style="--c:${CC[q.c]}">${CATS[q.c].name}</span><span class="count">Card ${st.n}</span></div>
+  <p class="qtext">${esc(q.q)}</p>
+  <div class="opts">${opts.map((o,i)=>{let cls="";if(showAns&&o===q.ok)cls=" ok";else if(herPick===i)cls=" bad";return `<button class="opt${cls}" data-i="${i}" ${owner||mine!=null?"disabled":""}><span class="l">${"ABCD"[i]}</span><span>${esc(o)}</span></button>`;}).join("")}</div>
+  ${showAns?`<div class="tip"><b>Why</b>${esc(q.x)}</div>`:""}`;
+}
+async function renderLive(){
+  const body=$("#liveBody");
+  if(isOwner){
+    if(live.timer==null){livePoll(true);}
+    if(!reportReady){await loadReport();}
+    const st=live.state;
+    const connected=live.seen&&Date.now()-live.seen<5000;
+    const status=`<span class="pill ${connected?"pass":"fail"}">${connected?"Mia's phone is connected":"Waiting for Mia to join"}</span>`;
+    if(!st||!st.active){
+      const missedN=herMissed().length;
+      const chips=[["ALL","All sections"],["MISSED",`Her missed questions (${missedN})`],...ORDER.map(k=>[k,CATS[k].short])];
+      body.innerHTML=`<div class="box"><h2>Study together</h2><p>Your phone controls which card Mia sees. When you tap Next, her phone moves to the same card. You see the correct answer and her pick as she answers. Her answers are graded and logged as usual.</p>
+        <p>On Mia's phone: open the link, tap <b style="color:var(--ink)">Together</b>, then <b style="color:var(--ink)">Join</b>.</p>
+        <div>${status}</div>
+        <div class="count">Quiz her on</div>
+        <div class="chips" style="flex-wrap:wrap">${chips.map(([k,n])=>`<button class="chip" data-src="${k}" aria-pressed="${live.src===k}">${n}</button>`).join("")}</div>
+        ${live.err?`<p style="color:var(--rose)">${esc(live.err)}</p>`:""}
+        <div class="row"><button class="btn got" id="lStart">Start session</button></div></div>`;
+      body.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{live.src=b.dataset.src;live.used=[];live.err="";renderLive();});
+      $("#lStart").onclick=hostNext;return;
+    }
+    const q=QB.at(st.qid), opts=liveOpts(st);
+    const pickLine=st.pick==null?`<p class="count">Waiting for Mia's answer…</p>`:`<div class="verdict ${st.ok?"ok":"bad"}">Mia picked ${"ABCD"[st.pick]}: ${esc(opts.at(st.pick)||"")}. ${st.ok?"Correct":"Wrong"}</div>`;
+    body.innerHTML=`<div class="row" style="justify-content:space-between">${status}<button class="tbtn" id="lEnd">End session</button></div>
+      <div class="box">${liveCard(st,true)}${pickLine}</div>
+      ${live.err?`<p style="color:var(--rose)">${esc(live.err)}</p>`:""}
+      <div class="row"><button class="btn got" id="lNext">Next card ›</button></div>`;
+    $("#lNext").onclick=hostNext;$("#lEnd").onclick=hostEnd;return;
+  }
+  // Mia's phone
+  if(!live.joined){
+    body.innerHTML=`<div class="box"><h2>Study together</h2><p>Studying with Shawntavia in person? Tap Join. Her phone picks the cards, and yours follows along. Your answers count on your report like regular flashcards.</p><div class="row"><button class="btn got" id="lJoin">Join</button></div></div>`;
+    $("#lJoin").onclick=()=>{live.joined=true;livePoll(true);renderLive();};return;
+  }
+  const st=live.state;
+  const leave=`<div class="row" style="justify-content:flex-end"><button class="tbtn" id="lLeave">Leave session</button></div>`;
+  if(!st||!st.active){
+    body.innerHTML=leave+`<div class="box"><h2>Waiting for Shawntavia</h2><p>You're connected. The first card appears here as soon as she starts the session.</p></div>`;
+  }else{
+    const answered=live.myN===st.n;
+    const q=QB.at(st.qid), ok=answered&&liveOpts(st).at(live.myPick)===q.ok;
+    body.innerHTML=leave+`<div class="box">${liveCard(st,false)}${answered?`<div class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite. The answer is: "+esc(q.ok)}</div><p class="count">Waiting for the next card…</p>`:""}</div>`;
+    body.querySelector(".opts").onclick=e=>{const b=e.target.closest(".opt");if(b)livePick(+b.dataset.i);};
+  }
+  $("#lLeave").onclick=()=>{live.joined=false;livePoll(false);renderLive();};
 }
 
 // ═════════ PRACTICE TEST

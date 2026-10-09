@@ -1025,13 +1025,19 @@ function dPick(i){
 }
 
 // ═════════ STUDY TOGETHER (owner's phone drives, Mia's phone follows)
-const live={joined:false,timer:null,state:null,src:"ALL",used:[],myN:0,myPick:null,err:"",busy:false};
+const live={joined:false,timer:null,state:null,src:"ALL",used:[],myKey:"",myPick:null,err:"",busy:false,maxN:0,sendFail:false,lastOk:0};
+const cardKey=st=>st&&st.active?st.n+":"+st.at:"";
+function withTimeout(ms){const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal;}
 const liveOpts=st=>{const q=QB.at(st.qid);if(!q)return [];const all=[q.ok,...q.wrong];return st.order.map(i=>all.at(i));};
-async function roomGet(){const r=await fetch(API+"/room"+(isOwner?"":"?who=student"),{cache:"no-store"});return r.json();}
-async function roomHost(state){const r=await fetch(API+"/room/host",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({code:ownerCode,state})});const j=await r.json();if(r.status===401)j.err="passcode";return j;}
+async function roomGet(){const r=await fetch(API+"/room"+(isOwner?"":"?who=student"),{cache:"no-store",signal:withTimeout(6000)});return r.json();}
+async function roomHost(state){const r=await fetch(API+"/room/host",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({code:ownerCode,state}),signal:withTimeout(8000)});const j=await r.json();if(r.status===401)j.err="passcode";return j;}
 function livePoll(on){
   clearInterval(live.timer);live.timer=null;if(!on)return;
-  const tick=async()=>{if(document.visibilityState!=="visible")return;try{const j=await roomGet();if(j&&j.ok){const changed=JSON.stringify(j.state)!==JSON.stringify(live.state)||j.seen!==live.seen;live.state=j.state;live.seen=j.seen;if(changed&&tab==="live")renderLive();}}catch(e){}};
+  const tick=async()=>{if(document.visibilityState!=="visible")return;try{const j=await roomGet();if(j&&j.ok){
+      const cur=live.state, nxt=j.state;
+      if(cur&&nxt&&(nxt.at||0)<(cur.at||0))return;
+      if(nxt&&nxt.active)live.maxN=Math.max(live.maxN,nxt.n||0);
+      const changed=JSON.stringify(nxt)!==JSON.stringify(cur)||j.seen!==live.seen;live.state=nxt;live.seen=j.seen;live.lastOk=Date.now();if(changed&&tab==="live")renderLive();}}catch(e){}};
   tick();live.timer=setInterval(tick,1000);
 }
 function herMissed(){
@@ -1045,27 +1051,40 @@ async function hostNext(){
   if(!pool.length){live.used=[];pool=livePool();}
   if(!pool.length){live.err=live.src==="MISSED"?"She has no missed questions right now. Pick a section instead.":"No questions in that set.";renderLive();return;}
   const q=pool.at(Math.floor(Math.random()*pool.length));live.used.push(q.id);
-  const n=(live.state&&live.state.active?live.state.n:0)+1;
-  live.busy=true;live.err="";
-  const j=await roomHost({active:true,n,qid:q.id,order:shuffleArr([0,1,2,3]),src:live.src});
-  live.busy=false;
-  if(!j.ok){live.err=j.err==="passcode"?"Your passcode was rejected. Log in again on the Report tab.":"Couldn't reach the study log. Check your connection.";renderLive();return;}
-  live.state=j.state;renderLive();
+  const active=live.state&&live.state.active;
+  const n=(active?Math.max(live.maxN,live.state.n||0):0)+1;
+  live.busy=true;live.err="";renderLive();
+  let j=null;
+  try{j=await roomHost({active:true,n,qid:q.id,order:shuffleArr([0,1,2,3]),src:live.src});}catch(e){j=null;}
+  finally{live.busy=false;}
+  if(!j||!j.ok){live.used.pop();live.err=j&&j.err==="passcode"?"Your passcode was rejected. Log in again on the Report tab.":"That card didn't send. Check your connection and tap Next card again.";renderLive();return;}
+  live.maxN=Math.max(live.maxN,j.state.n||0);live.state=j.state;renderLive();
 }
-async function hostEnd(){live.busy=true;await roomHost({active:false,n:(live.state&&live.state.n)||0});live.busy=false;live.state={active:false};live.used=[];renderLive();}
+async function hostEnd(){live.busy=true;let j=null;try{j=await roomHost({active:false,n:(live.state&&live.state.n)||0});}catch(e){}finally{live.busy=false;}live.state=(j&&j.ok&&j.state)||{active:false,at:0};live.used=[];live.maxN=0;renderLive();}
+async function sendPick(st,i,ok){
+  for(let a=0;a<3;a++){
+    try{const r=await fetch(API+"/room/pick",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({n:st.n,pick:i,ok}),signal:withTimeout(6000)});const j=await r.json();
+      if(j&&j.ok)return;
+      const cur=live.state;if(cur&&cur.active&&cur.n===st.n&&cur.pick!=null)return; // already recorded
+      if(!cur||cardKey(cur)!==cardKey(st))return; // card already moved on
+    }catch(e){}
+    await new Promise(r=>setTimeout(r,800*(a+1)));
+  }
+  if(live.state&&cardKey(live.state)===cardKey(st)&&live.state.pick==null){live.sendFail=true;if(tab==="live")renderLive();}
+}
 function livePick(i){
-  const st=live.state;if(!st||!st.active||live.myN===st.n)return;
+  const st=live.state;if(!st||!st.active||live.myKey===cardKey(st))return;
   const q=QB.at(st.qid), opts=liveOpts(st), ok=opts.at(i)===q.ok;
-  live.myN=st.n;live.myPick=i;
+  live.myKey=cardKey(st);live.myPick=i;live.myOk=ok;live.sendFail=false;
   noteAnswer(q,opts.at(i),ok);saveMastery(false);
   dToday.n++;if(ok)dToday.c++;ls.set("tdlr-esth-today",dToday);
   sess.cards++;if(ok)sess.got++;else sess.missed++;activity();
-  fetch(API+"/room/pick",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({n:st.n,pick:i,ok})}).catch(()=>{});
+  sendPick(st,i,ok);
   renderLive();
 }
 function liveCard(st,owner){
   const q=QB.at(st.qid), opts=liveOpts(st);
-  const mine=!owner&&live.myN===st.n?live.myPick:null;
+  const mine=!owner&&live.myKey===cardKey(st)?live.myPick:null;
   const herPick=owner?(st.pick!=null?st.pick:null):mine;
   const showAns=owner||mine!=null;
   return `<div class="tagrow"><span class="tag" style="--c:${CC[q.c]}">${CATS[q.c].name}</span><span class="count">Card ${st.n}</span></div>
@@ -1090,7 +1109,7 @@ async function renderLive(){
         <div class="count">Quiz her on</div>
         <div class="chips" style="flex-wrap:wrap">${chips.map(([k,n])=>`<button class="chip" data-src="${k}" aria-pressed="${live.src===k}">${n}</button>`).join("")}</div>
         ${live.err?`<p style="color:var(--rose)">${esc(live.err)}</p>`:""}
-        <div class="row"><button class="btn got" id="lStart">Start session</button></div></div>`;
+        <div class="row"><button class="btn got" id="lStart" ${live.busy?"disabled":""}>${live.busy?"Starting…":"Start session"}</button></div></div>`;
       body.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{live.src=b.dataset.src;live.used=[];live.err="";renderLive();});
       $("#lStart").onclick=hostNext;return;
     }
@@ -1099,7 +1118,7 @@ async function renderLive(){
     body.innerHTML=`<div class="row" style="justify-content:space-between">${status}<button class="tbtn" id="lEnd">End session</button></div>
       <div class="box">${liveCard(st,true)}${pickLine}</div>
       ${live.err?`<p style="color:var(--rose)">${esc(live.err)}</p>`:""}
-      <div class="row"><button class="btn got" id="lNext">Next card ›</button></div>`;
+      <div class="row"><button class="btn got" id="lNext" ${live.busy?"disabled":""}>${live.busy?"Sending…":"Next card ›"}</button></div>`;
     $("#lNext").onclick=hostNext;$("#lEnd").onclick=hostEnd;return;
   }
   // Mia's phone
@@ -1112,11 +1131,13 @@ async function renderLive(){
   if(!st||!st.active){
     body.innerHTML=leave+`<div class="box"><h2>Waiting for Shawntavia</h2><p>You're connected. The first card appears here as soon as she starts the session.</p></div>`;
   }else{
-    const answered=live.myN===st.n;
+    const answered=live.myKey===cardKey(st);
     const q=QB.at(st.qid), ok=answered&&liveOpts(st).at(live.myPick)===q.ok;
-    body.innerHTML=leave+`<div class="box">${liveCard(st,false)}${answered?`<div class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite. The answer is: "+esc(q.ok)}</div><p class="count">Waiting for the next card…</p>`:""}</div>`;
+    body.innerHTML=leave+`<div class="box">${liveCard(st,false)}${answered?`<div class="verdict ${ok?"ok":"bad"}">${ok?"Correct":"Not quite. The answer is: "+esc(q.ok)}</div>${live.sendFail?`<p style="color:var(--rose)">Your answer didn't reach Shawntavia's phone.</p><div class="row"><button class="btn got" id="lResend">Send my answer again</button></div>`:`<p class="count">Waiting for the next card…</p>`}`:""}</div>`;
     body.querySelector(".opts").onclick=e=>{const b=e.target.closest(".opt");if(b)livePick(+b.dataset.i);};
+    const rs=$("#lResend");if(rs)rs.onclick=()=>{live.sendFail=false;renderLive();sendPick(st,live.myPick,live.myOk);};
   }
+  if(live.joined&&live.lastOk&&Date.now()-live.lastOk>8000)body.insertAdjacentHTML("afterbegin",`<p class="notice">Reconnecting to Shawntavia's phone…</p>`);
   $("#lLeave").onclick=()=>{live.joined=false;livePoll(false);renderLive();};
 }
 

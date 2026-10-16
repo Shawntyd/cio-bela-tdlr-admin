@@ -1059,7 +1059,7 @@ async function hostNext(){
   if(!pool.length){live.used=[];pool=livePool();}
   if(!pool.length){
     if(live.src==="MISSED"&&!starting){live.done=true;renderLive();return;}
-    live.err=live.src==="MISSED"?"She hasn't missed any questions yet. Pick a section instead.":"No questions in that set.";renderLive();return;
+    live.err=live.src==="MISSED"?"Selection B is empty right now. Pick a section instead.":"No questions in that set.";renderLive();return;
   }
   live.done=false;
   const q=live.src==="MISSED"?pool.at(0):pool.at(Math.floor(Math.random()*pool.length));live.used.push(q.id);
@@ -1115,7 +1115,7 @@ async function renderLive(){
     if(!st||!st.active){
       const missedN=herMissed().length;
       if(!live.srcSet&&missedN)live.src="MISSED";
-      const chips=[["MISSED",`Her missed questions (${missedN})`],["ALL","All sections"],...ORDER.map(k=>[k,CATS[k].short])];
+      const chips=[["MISSED",`Selection B (${missedN})`],["ALL","All sections"],...ORDER.map(k=>[k,CATS[k].short])];
       body.innerHTML=`<div class="box"><h2>Study together</h2><p>Your phone controls which card Mia sees. When you tap Next, her phone moves to the same card. You see the correct answer and her pick as she answers. Her answers are graded and logged as usual.</p>
         <p>On Mia's phone: open the link, tap <b style="color:var(--ink)">Together</b>, then <b style="color:var(--ink)">Join</b>.</p>
         <div>${status}</div>
@@ -1129,10 +1129,10 @@ async function renderLive(){
     const q=QB.at(st.qid), opts=liveOpts(st);
     let setLine="";
     if(st.src==="MISSED"){const all=herMissed(), info=herMissedInfo(), m=info[st.qid];
-      setLine=`<p class="count">Missed set: ${live.rightIds.size} of ${all.length} answered right this session${m?` · this one she has missed ${m.wrong} time${m.wrong>1?"s":""} before${m.last?`, last picking “${esc(m.last)}”`:""}`:""}</p>`;}
+      setLine=`<p class="count">Selection B: ${live.rightIds.size} of ${all.length} done${m?` · wrong ${m.wrong}× before${m.last?`, last picked “${esc(m.last)}”`:""}`:""}</p>`;}
     if(live.done){
       body.innerHTML=`<div class="row" style="justify-content:space-between">${status}<button class="tbtn" id="lEnd">End session</button></div>
-        <div class="box"><h2>She got every missed question right</h2><p>All ${live.rightIds.size} questions in her missed set were answered correctly this session.</p>
+        <div class="box"><h2>Selection B complete</h2><p>She answered all ${live.rightIds.size} questions in Selection B correctly this session.</p>
         <div class="row"><button class="btn got" id="lAgain">Go through them again</button><button class="btn plain" id="lEnd2">End session</button></div></div>`;
       $("#lAgain").onclick=()=>{live.rightIds=new Set();live.used=[];live.done=false;hostNext();};
       $("#lEnd").onclick=hostEnd;$("#lEnd2").onclick=hostEnd;return;

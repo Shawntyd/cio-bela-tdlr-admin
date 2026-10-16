@@ -829,7 +829,8 @@ function comeBack(){
   if(tab==="drill"&&dq&&dpick==null)dqAway=true;
   dirty=true;flush(true);
 }
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){goAway();flush(true,true);}else comeBack();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){goAway();flushProg();flush(true,true);}else comeBack();});
+addEventListener("pagehide",flushProg);
 addEventListener("blur",goAway);addEventListener("focus",comeBack);
 addEventListener("pagehide",()=>flush(true,true));
 
@@ -848,12 +849,15 @@ function saveProg(){ls.set(KEY,prog);}
 // graded flashcard history: question id -> {seen, wrong, streak, last (her last wrong pick), lastAt}
 const MKEY="tdlr-esth-mastery";
 let M=ls.get(MKEY,{})||{};
+let progPending=null;
+function flushProg(){if(progPending){clearTimeout(progTimer);const go=progPending;progPending=null;go();}}
 function saveMastery(now){
   ls.set(MKEY,M);
   if(isOwner)return;
   clearTimeout(progTimer);
   const go=()=>{const body={key:personKey(),name:studentName||"",mastery:M,updated:new Date().toISOString()};flushChain=flushChain.then(()=>send("progress",personKey(),body));};
-  if(now)go();else progTimer=setTimeout(go,2500);
+  progPending=go;
+  if(now){progPending=null;go();}else progTimer=setTimeout(()=>{progPending=null;go();},20000);
 }
 function mrec(id){return M[id]||(M[id]={seen:0,wrong:0,streak:0,last:null,lastAt:null});}
 function noteAnswer(q,pickText,correct){const m=mrec(q.id);m.seen++;m.lastAt=new Date().toISOString();if(correct){m.streak++;}else{m.wrong++;m.streak=0;m.last=pickText;}}
@@ -1033,12 +1037,14 @@ async function roomGet(){const r=await fetch(API+"/room"+(isOwner?"":"?who=stude
 async function roomHost(state){const r=await fetch(API+"/room/host",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({code:ownerCode,state}),signal:withTimeout(8000)});const j=await r.json();if(r.status===401)j.err="passcode";return j;}
 function livePoll(on){
   clearInterval(live.timer);live.timer=null;if(!on)return;
-  const tick=async()=>{if(document.visibilityState!=="visible")return;try{const j=await roomGet();if(j&&j.ok){
+  let inflight=false;
+  const tick=async()=>{if(document.visibilityState!=="visible"||inflight)return;inflight=true;try{const j=await roomGet();if(j&&j.ok){
       const cur=live.state, nxt=j.state;
       if(cur&&nxt&&(nxt.at||0)<(cur.at||0))return;
       if(nxt&&nxt.active)live.maxN=Math.max(live.maxN,nxt.n||0);
       if(isOwner&&nxt&&nxt.active&&nxt.pick!=null&&nxt.ok&&nxt.src==="MISSED")live.rightIds.add(nxt.qid);
-      const changed=JSON.stringify(nxt)!==JSON.stringify(cur)||j.seen!==live.seen;live.state=nxt;live.seen=j.seen;live.lastOk=Date.now();if(changed&&tab==="live")renderLive();}}catch(e){}};
+      if(isOwner&&nxt&&nxt.active&&nxt.src&&!live.busy){live.src=nxt.src;live.srcSet=true;}
+      const changed=JSON.stringify(nxt)!==JSON.stringify(cur)||j.seen!==live.seen;live.state=nxt;live.seen=j.seen;live.lastOk=Date.now();if(changed&&tab==="live")renderLive();}}catch(e){}finally{inflight=false;}};
   tick();live.timer=setInterval(tick,1000);
 }
 // every question she has ever answered wrong, still-missing ones first, then most-missed
@@ -1054,7 +1060,8 @@ function livePool(){if(live.src==="MISSED")return herMissed().filter(q=>!live.ri
 async function hostNext(){
   if(live.busy)return;
   const starting=!(live.state&&live.state.active);
-  if(starting){live.rightIds=new Set();live.used=[];live.done=false;if(live.src==="MISSED"){reportReady=false;await loadReport();}}
+  if(!starting&&live.state.src)live.src=live.state.src;
+  if(starting){live.rightIds=new Set();live.used=[];live.done=false;if(live.src==="MISSED"&&!reportReady){live.busy=true;renderLive();await loadReport();live.busy=false;}}
   let pool=livePool().filter(q=>!live.used.includes(q.id));
   if(!pool.length){live.used=[];pool=livePool();}
   if(!pool.length){
@@ -1105,6 +1112,9 @@ function liveCard(st,owner){
   ${showAns?`<div class="tip"><b>Why</b>${esc(q.x)}</div>`:""}`;
 }
 async function renderLive(){
+  try{await renderLiveInner();}catch(e){const b=$("#liveBody");if(b){b.innerHTML=`<div class="box"><p>Something went wrong showing this card.</p><div class="row"><button class="btn got" id="lFix">Reload card</button></div></div>`;$("#lFix").onclick=()=>renderLive();}}
+}
+async function renderLiveInner(){
   const body=$("#liveBody");
   if(isOwner){
     if(live.timer==null){livePoll(true);}
@@ -1121,10 +1131,11 @@ async function renderLive(){
         <div>${status}</div>
         <div class="count">Quiz her on</div>
         <div class="chips" style="flex-wrap:wrap">${chips.map(([k,n])=>`<button class="chip" data-src="${k}" aria-pressed="${live.src===k}">${n}</button>`).join("")}</div>
+        ${reportErr?`<p style="color:var(--rose)">Couldn't load her latest results, so Selection B may be out of date. <button class="tbtn" id="lRetry">Try again</button></p>`:""}
         ${live.err?`<p style="color:var(--rose)">${esc(live.err)}</p>`:""}
         <div class="row"><button class="btn got" id="lStart" ${live.busy?"disabled":""}>${live.busy?"Starting…":"Start session"}</button></div></div>`;
       body.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{live.src=b.dataset.src;live.srcSet=true;live.used=[];live.err="";renderLive();});
-      $("#lStart").onclick=hostNext;return;
+      $("#lStart").onclick=hostNext;const rt=$("#lRetry");if(rt)rt.onclick=()=>{reportReady=false;renderLive();};return;
     }
     const q=QB.at(st.qid), opts=liveOpts(st);
     let setLine="";
@@ -1148,7 +1159,7 @@ async function renderLive(){
   // Mia's phone
   if(!live.joined){
     body.innerHTML=`<div class="box"><h2>Study together</h2><p>Studying with Shawntavia in person? Tap Join. Her phone picks the cards, and yours follows along. Your answers count on your report like regular flashcards.</p><div class="row"><button class="btn got" id="lJoin">Join</button></div></div>`;
-    $("#lJoin").onclick=()=>{live.joined=true;livePoll(true);renderLive();};return;
+    $("#lJoin").onclick=()=>{live.joined=true;ls.set("tdlr-esth-joined",Date.now());livePoll(true);renderLive();};return;
   }
   const st=live.state;
   const leave=`<div class="row" style="justify-content:flex-end"><button class="tbtn" id="lLeave">Leave session</button></div>`;
@@ -1162,7 +1173,7 @@ async function renderLive(){
     const rs=$("#lResend");if(rs)rs.onclick=()=>{live.sendFail=false;renderLive();sendPick(st,live.myPick,live.myOk);};
   }
   if(live.joined&&live.lastOk&&Date.now()-live.lastOk>8000)body.insertAdjacentHTML("afterbegin",`<p class="notice">Reconnecting to Shawntavia's phone…</p>`);
-  $("#lLeave").onclick=()=>{live.joined=false;livePoll(false);renderLive();};
+  $("#lLeave").onclick=()=>{live.joined=false;ls.set("tdlr-esth-joined",0);livePoll(false);renderLive();};
 }
 
 // ═════════ PRACTICE TEST
@@ -1285,7 +1296,8 @@ let SESS=[], TESTS=[], PROG=[], reportReady=false, reportErr="";
 async function loadReport(){
   reportErr="";
   try{
-    const r=await fetch(API+"/report?code="+encodeURIComponent(ownerCode),{cache:"no-store"});
+    const c=new AbortController();const to=setTimeout(()=>c.abort(),12000);
+    const r=await fetch(API+"/report?code="+encodeURIComponent(ownerCode),{cache:"no-store",signal:c.signal});clearTimeout(to);
     const j=await r.json();
     if(r.status===401){reportErr="passcode";}
     else if(!j.ok){reportErr="server";}
@@ -1379,6 +1391,7 @@ async function renderReport(){
 // ═════════ boot
 renderChips();renderOutline();buildDeck();restoreCard();render();renderHistory();renderDChips();drillNew();
 maybeAskName();showTrackNote();
+if(!isOwner&&Date.now()-(ls.get("tdlr-esth-joined",0)||0)<3*3600000){live.joined=true;livePoll(true);setTab("live");}
 if(!isOwner){
   fetch(API+"/progress?key="+encodeURIComponent(personKey()),{cache:"no-store"}).then(r=>r.json()).then(j=>{
     if(j&&j.data&&j.data.mastery){for(const [k,v] of Object.entries(j.data.mastery)){if(!M[k]||(v.seen||0)>(M[k].seen||0))M[k]=v;}ls.set(MKEY,M);if(tab==="drill")renderDrill();}

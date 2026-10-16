@@ -867,7 +867,7 @@ function setTab(t){
   document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
   $("#p-drill").hidden=t!=="drill";$("#p-live").hidden=t!=="live";$("#p-cards").hidden=t!=="cards";$("#p-test").hidden=t!=="test";$("#p-report").hidden=t!=="report";
   if(t==="drill")renderDrill();
-  if(t==="live")renderLive();
+  if(t==="live"){if(isOwner&&!(live.state&&live.state.active))reportReady=false;renderLive();}
   if(t==="report")renderReport();
   if(t==="test"&&!inTest)renderHistory();
   activity();
@@ -1025,7 +1025,7 @@ function dPick(i){
 }
 
 // ═════════ STUDY TOGETHER (owner's phone drives, Mia's phone follows)
-const live={joined:false,timer:null,state:null,src:"ALL",used:[],myKey:"",myPick:null,err:"",busy:false,maxN:0,sendFail:false,lastOk:0};
+const live={rightIds:new Set(),srcSet:false,done:false,joined:false,timer:null,state:null,src:"ALL",used:[],myKey:"",myPick:null,err:"",busy:false,maxN:0,sendFail:false,lastOk:0};
 const cardKey=st=>st&&st.active?st.n+":"+st.at:"";
 function withTimeout(ms){const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal;}
 const liveOpts=st=>{const q=QB.at(st.qid);if(!q)return [];const all=[q.ok,...q.wrong];return st.order.map(i=>all.at(i));};
@@ -1037,20 +1037,32 @@ function livePoll(on){
       const cur=live.state, nxt=j.state;
       if(cur&&nxt&&(nxt.at||0)<(cur.at||0))return;
       if(nxt&&nxt.active)live.maxN=Math.max(live.maxN,nxt.n||0);
+      if(isOwner&&nxt&&nxt.active&&nxt.pick!=null&&nxt.ok&&nxt.src==="MISSED")live.rightIds.add(nxt.qid);
       const changed=JSON.stringify(nxt)!==JSON.stringify(cur)||j.seen!==live.seen;live.state=nxt;live.seen=j.seen;live.lastOk=Date.now();if(changed&&tab==="live")renderLive();}}catch(e){}};
   tick();live.timer=setInterval(tick,1000);
 }
-function herMissed(){
-  const ids=new Set();(PROG||[]).forEach(g=>{if(g&&g.mastery)for(const [id,m] of Object.entries(g.mastery)){if(mstatus(m)==="fix")ids.add(+id);}});
-  return QB.filter(q=>ids.has(q.id));
+// every question she has ever answered wrong, still-missing ones first, then most-missed
+function herMissedInfo(){
+  const info={};(PROG||[]).forEach(g=>{if(g&&g.mastery)for(const [id,m] of Object.entries(g.mastery)){if(m&&m.wrong>0){const p=info[id];if(!p||(m.seen||0)>(p.seen||0))info[id]=m;}}});
+  return info;
 }
-function livePool(){if(live.src==="MISSED")return herMissed();return QB.filter(q=>live.src==="ALL"||q.c===live.src);}
+function herMissed(){
+  const info=herMissedInfo();
+  return QB.filter(q=>info[q.id]).sort((a,b)=>{const ma=info[a.id],mb=info[b.id];return (mstatus(mb)==="fix")-(mstatus(ma)==="fix")||mb.wrong-ma.wrong;});
+}
+function livePool(){if(live.src==="MISSED")return herMissed().filter(q=>!live.rightIds.has(q.id));return QB.filter(q=>live.src==="ALL"||q.c===live.src);}
 async function hostNext(){
   if(live.busy)return;
+  const starting=!(live.state&&live.state.active);
+  if(starting){live.rightIds=new Set();live.used=[];live.done=false;if(live.src==="MISSED"){reportReady=false;await loadReport();}}
   let pool=livePool().filter(q=>!live.used.includes(q.id));
   if(!pool.length){live.used=[];pool=livePool();}
-  if(!pool.length){live.err=live.src==="MISSED"?"She has no missed questions right now. Pick a section instead.":"No questions in that set.";renderLive();return;}
-  const q=pool.at(Math.floor(Math.random()*pool.length));live.used.push(q.id);
+  if(!pool.length){
+    if(live.src==="MISSED"&&!starting){live.done=true;renderLive();return;}
+    live.err=live.src==="MISSED"?"She hasn't missed any questions yet. Pick a section instead.":"No questions in that set.";renderLive();return;
+  }
+  live.done=false;
+  const q=live.src==="MISSED"?pool.at(0):pool.at(Math.floor(Math.random()*pool.length));live.used.push(q.id);
   const active=live.state&&live.state.active;
   const n=(active?Math.max(live.maxN,live.state.n||0):0)+1;
   live.busy=true;live.err="";renderLive();
@@ -1102,7 +1114,8 @@ async function renderLive(){
     const status=`<span class="pill ${connected?"pass":"fail"}">${connected?"Mia's phone is connected":"Waiting for Mia to join"}</span>`;
     if(!st||!st.active){
       const missedN=herMissed().length;
-      const chips=[["ALL","All sections"],["MISSED",`Her missed questions (${missedN})`],...ORDER.map(k=>[k,CATS[k].short])];
+      if(!live.srcSet&&missedN)live.src="MISSED";
+      const chips=[["MISSED",`Her missed questions (${missedN})`],["ALL","All sections"],...ORDER.map(k=>[k,CATS[k].short])];
       body.innerHTML=`<div class="box"><h2>Study together</h2><p>Your phone controls which card Mia sees. When you tap Next, her phone moves to the same card. You see the correct answer and her pick as she answers. Her answers are graded and logged as usual.</p>
         <p>On Mia's phone: open the link, tap <b style="color:var(--ink)">Together</b>, then <b style="color:var(--ink)">Join</b>.</p>
         <div>${status}</div>
@@ -1110,12 +1123,23 @@ async function renderLive(){
         <div class="chips" style="flex-wrap:wrap">${chips.map(([k,n])=>`<button class="chip" data-src="${k}" aria-pressed="${live.src===k}">${n}</button>`).join("")}</div>
         ${live.err?`<p style="color:var(--rose)">${esc(live.err)}</p>`:""}
         <div class="row"><button class="btn got" id="lStart" ${live.busy?"disabled":""}>${live.busy?"Starting…":"Start session"}</button></div></div>`;
-      body.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{live.src=b.dataset.src;live.used=[];live.err="";renderLive();});
+      body.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{live.src=b.dataset.src;live.srcSet=true;live.used=[];live.err="";renderLive();});
       $("#lStart").onclick=hostNext;return;
     }
     const q=QB.at(st.qid), opts=liveOpts(st);
+    let setLine="";
+    if(st.src==="MISSED"){const all=herMissed(), info=herMissedInfo(), m=info[st.qid];
+      setLine=`<p class="count">Missed set: ${live.rightIds.size} of ${all.length} answered right this session${m?` · this one she has missed ${m.wrong} time${m.wrong>1?"s":""} before${m.last?`, last picking “${esc(m.last)}”`:""}`:""}</p>`;}
+    if(live.done){
+      body.innerHTML=`<div class="row" style="justify-content:space-between">${status}<button class="tbtn" id="lEnd">End session</button></div>
+        <div class="box"><h2>She got every missed question right</h2><p>All ${live.rightIds.size} questions in her missed set were answered correctly this session.</p>
+        <div class="row"><button class="btn got" id="lAgain">Go through them again</button><button class="btn plain" id="lEnd2">End session</button></div></div>`;
+      $("#lAgain").onclick=()=>{live.rightIds=new Set();live.used=[];live.done=false;hostNext();};
+      $("#lEnd").onclick=hostEnd;$("#lEnd2").onclick=hostEnd;return;
+    }
     const pickLine=st.pick==null?`<p class="count">Waiting for Mia's answer…</p>`:`<div class="verdict ${st.ok?"ok":"bad"}">Mia picked ${"ABCD"[st.pick]}: ${esc(opts.at(st.pick)||"")}. ${st.ok?"Correct":"Wrong"}</div>`;
     body.innerHTML=`<div class="row" style="justify-content:space-between">${status}<button class="tbtn" id="lEnd">End session</button></div>
+      ${setLine}
       <div class="box">${liveCard(st,true)}${pickLine}</div>
       ${live.err?`<p style="color:var(--rose)">${esc(live.err)}</p>`:""}
       <div class="row"><button class="btn got" id="lNext" ${live.busy?"disabled":""}>${live.busy?"Sending…":"Next card ›"}</button></div>`;
